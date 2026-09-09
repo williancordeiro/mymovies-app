@@ -11,7 +11,9 @@ export default function SearchScreen() {
           accessibilityRole="button"
           accessibilityLabel="Voltar"
           className="h-12 w-12 items-center justify-center rounded-full bg-[#262626]"
-          onPress={() => router.canGoBack() ? router.back() : router.replace("/")}
+          onPress={() =>
+            router.canGoBack() ? router.back() : router.replace("/")
+          }
           style={({ pressed }) => ({ opacity: pressed ? 0.65 : 1 })}
         >
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />

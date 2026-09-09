@@ -83,7 +83,7 @@ export default function TabNavbar({
           className="h-19.5 w-19.5 items-center justify-center rounded-full bg-[#505050]"
           accessibilityRole="button"
           accessibilityLabel="Buscar filmes"
-          onPress={() => router.push("/(stack)/search")}
+          onPress={() => router.push("/(stack)/search/search")}
           style={({ pressed }) => ({ opacity: pressed ? 0.65 : 1 })}
         >
           <Ionicons
