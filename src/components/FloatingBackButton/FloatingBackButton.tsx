@@ -22,7 +22,7 @@ export default function FloatingBackButton() {
         onPress={() =>
           router.canGoBack() ? router.back() : router.replace("/")
         }
-        className="h-19.5 w-19.5 items-center justify-center rounded-full bg-[#505050]"
+        className="h-19.5 w-19.5 items-center justify-center rounded-full bg-neutral-700/75"
         style={({ pressed }) => ({ opacity: pressed ? 0.65 : 1 })}
       >
         <Ionicons

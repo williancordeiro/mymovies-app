@@ -20,15 +20,23 @@ export default function TabNavbar({
 }: BottomTabBarProps) {
   return (
     <View
+      pointerEvents="box-none"
       className="bg-transparent pt-3"
       style={{
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        right: 0,
         paddingBottom: Math.max(insets.bottom, 12),
         paddingLeft: Math.max(insets.left, 8),
         paddingRight: Math.max(insets.right, 8),
       }}
     >
-      <View className="w-full max-w-110 flex-row items-center gap-4 self-center">
-        <View className="min-w-0 flex-1 flex-row rounded-full bg-[#505050] p-1">
+      <View
+        pointerEvents="box-none"
+        className="w-full max-w-110 flex-row items-center gap-4 self-center"
+      >
+        <View className="min-w-0 flex-1 flex-row rounded-full bg-neutral-700/75 p-1">
           {state.routes.map((route, index) => {
             const selected = state.index === index;
             const { options } = descriptors[route.key];
@@ -80,7 +88,7 @@ export default function TabNavbar({
           })}
         </View>
         <Pressable
-          className="h-19.5 w-19.5 items-center justify-center rounded-full bg-[#505050]"
+          className="h-19.5 w-19.5 items-center justify-center rounded-full bg-neutral-700/75"
           accessibilityRole="button"
           accessibilityLabel="Buscar filmes"
           onPress={() => router.push("/(stack)/search/search")}

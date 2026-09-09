@@ -2,13 +2,14 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { FlashList } from "@shopify/flash-list";
 import { useCallback } from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import MovieCard from "../../../src/components/MovieCard/MovieCard";
 import { useMovies } from "../../../src/hooks/movie";
 import type { Movie } from "../../../src/utils/movie";
 
 export default function HomeScreen() {
+  const insets = useSafeAreaInsets();
   const { data, error, isPending, isRefetching, refetch } = useMovies();
   const movies = data?.results ?? [];
 
@@ -44,7 +45,11 @@ export default function HomeScreen() {
         renderItem={renderMovie}
         refreshing={isRefetching}
         onRefresh={refetch}
-        contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 24 }}
+        contentContainerStyle={{
+          paddingHorizontal: 18,
+          // Barra de 78 px, espaço superior de 12 px e área segura inferior.
+          paddingBottom: 78 + 12 + Math.max(insets.bottom, 12) + 24,
+        }}
         ListEmptyComponent={
           <View className="min-h-80 items-center justify-center px-8">
             {isPending ? (
