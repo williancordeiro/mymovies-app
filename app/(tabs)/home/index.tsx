@@ -4,9 +4,9 @@ import { useCallback } from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import type { Movie } from "../../../src/api/movie";
 import { useMovies } from "../../../src/api/movie";
 import MovieCard from "../../../src/components/MovieCard/MovieCard";
+import type { Movie } from "../../../src/utils/movie";
 
 export default function HomeScreen() {
   const { data, error, isPending, isRefetching, refetch } = useMovies();

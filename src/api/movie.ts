@@ -1,92 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../interceptor/api";
-
-export interface Movie {
-  adult: boolean;
-  backdrop_path: string | null;
-  genre_ids: number[];
-  id: number;
-  original_language: string;
-  original_title: string;
-  overview: string;
-  popularity: number;
-  poster_path: string | null;
-  release_date: string;
-  softcore?: boolean;
-  title: string;
-  video: boolean;
-  vote_average: number;
-  vote_count: number;
-  mymovies_rating_average: number;
-  user_rating: number | null;
-}
-
-export interface MovieGenre {
-  id: number;
-  name: string;
-}
-
-export interface MovieCollection {
-  id: number;
-  name: string;
-  poster_path: string | null;
-  backdrop_path: string | null;
-}
-
-export interface ProductionCompany {
-  id: number;
-  logo_path: string | null;
-  name: string;
-  origin_country: string;
-}
-
-export interface ProductionCountry {
-  iso_3166_1: string;
-  name: string;
-}
-
-export interface SpokenLanguage {
-  english_name: string;
-  iso_639_1: string;
-  name: string;
-}
-
-export interface MovieDetails extends Omit<Movie, "genre_ids"> {
-  belongs_to_collection: MovieCollection | null;
-  budget: number;
-  genres: MovieGenre[];
-  homepage: string;
-  imdb_id: string | null;
-  origin_country: string[];
-  production_companies: ProductionCompany[];
-  production_countries: ProductionCountry[];
-  revenue: number;
-  runtime: number | null;
-  spoken_languages: SpokenLanguage[];
-  status: string;
-  tagline: string;
-}
-
-export interface MoviesPage {
-  page: number;
-  results: Movie[];
-  total_pages: number;
-  total_results: number;
-}
-
-interface MoviesResponse {
-  movies: MoviesPage;
-}
-
-interface MovieDetailsResponse {
-  movie: MovieDetails | MovieApiError;
-}
-
-interface MovieApiError {
-  success: false;
-  status_code: number;
-  status_message: string;
-}
+import type {
+  MovieApiError,
+  MovieDetails,
+  MovieDetailsResponse,
+} from "../utils/movieDetails";
+import type { MoviesPage, MoviesResponse } from "../utils/moviePagination";
 
 const isMovieApiError = (
   movie: MovieDetails | MovieApiError,

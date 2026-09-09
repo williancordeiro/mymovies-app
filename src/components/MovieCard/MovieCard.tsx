@@ -3,7 +3,7 @@ import { Image } from "expo-image";
 import { memo } from "react";
 import { Text, View } from "react-native";
 
-import type { Movie } from "../../api/movie";
+import type { Movie } from "../../utils/movie";
 
 const POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
 
