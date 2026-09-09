@@ -65,7 +65,10 @@ function MovieCard({ movie }: MovieCardProps) {
         </View>
       </View>
 
-      <View className="min-h-18 px-3 py-3">
+      <View
+        className="justify-between px-3 py-3"
+        style={{ height: 88 }}
+      >
         <Text className="font-semibold leading-5 text-white" numberOfLines={2}>
           {movie.title}
         </Text>
