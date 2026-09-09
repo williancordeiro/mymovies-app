@@ -20,7 +20,7 @@ export default function TabNavbar({
 }: BottomTabBarProps) {
   return (
     <View
-      className="bg-black pt-3"
+      className="bg-transparent pt-3"
       style={{
         paddingBottom: Math.max(insets.bottom, 12),
         paddingLeft: Math.max(insets.left, 8),
