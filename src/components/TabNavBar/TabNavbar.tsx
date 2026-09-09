@@ -21,20 +21,20 @@ export default function TabNavbar({
   return (
     <View
       pointerEvents="box-none"
-      className="bg-transparent pt-3"
+      className="bg-transparent pt-2"
       style={{
         position: "absolute",
         bottom: 0,
         left: 0,
         right: 0,
         paddingBottom: Math.max(insets.bottom, 12),
-        paddingLeft: Math.max(insets.left, 8),
-        paddingRight: Math.max(insets.right, 8),
+        paddingLeft: Math.max(insets.left, 16),
+        paddingRight: Math.max(insets.right, 16),
       }}
     >
       <View
         pointerEvents="box-none"
-        className="w-full max-w-110 flex-row items-center gap-4 self-center"
+        className="w-full max-w-96 flex-row items-center gap-2 self-center"
       >
         <View className="min-w-0 flex-1 flex-row rounded-full bg-neutral-700/75 p-1">
           {state.routes.map((route, index) => {
@@ -50,7 +50,7 @@ export default function TabNavbar({
                 accessibilityLabel={options.tabBarAccessibilityLabel ?? label}
                 accessibilityState={{ selected }}
                 testID={options.tabBarButtonTestID}
-                className={`min-h-17.5 min-w-0 flex-1 items-center justify-center rounded-full px-1 py-2 ${selected ? "bg-[#dd5d13]" : "bg-transparent"}`}
+                className={`min-h-[58px] min-w-0 flex-1 items-center justify-center rounded-full px-1 py-1 ${selected ? "bg-[#dd5d13]" : "bg-transparent"}`}
                 style={({ pressed }) => ({ opacity: pressed ? 0.65 : 1 })}
                 onPress={() => {
                   const event = navigation.emit({
@@ -74,7 +74,7 @@ export default function TabNavbar({
                         : icon.inactive
                       : "ellipse-outline"
                   }
-                  size={34}
+                  size={28}
                   color={selected ? "#FFFFFF" : "#969696"}
                   accessible={false}
                 />
@@ -88,7 +88,7 @@ export default function TabNavbar({
           })}
         </View>
         <Pressable
-          className="h-19.5 w-19.5 items-center justify-center rounded-full bg-neutral-700/75"
+          className="h-[66px] w-[66px] items-center justify-center rounded-full bg-neutral-700/75"
           accessibilityRole="button"
           accessibilityLabel="Buscar filmes"
           onPress={() => router.push("/(stack)/search/search")}
@@ -96,7 +96,7 @@ export default function TabNavbar({
         >
           <Ionicons
             name="search"
-            size={44}
+            size={32}
             color="#FFFFFF"
             accessible={false}
           />
