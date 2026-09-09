@@ -1,7 +1,8 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Image } from "expo-image";
+import { router } from "expo-router";
 import { memo } from "react";
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 import type { Movie } from "../../utils/movie";
 
@@ -25,15 +26,22 @@ function MovieCard({ movie }: MovieCardProps) {
   const releaseYear = movie.release_date
     ? new Date(`${movie.release_date}T00:00:00`).getFullYear()
     : null;
-  const rating = Number.isFinite(movie.vote_average)
-    ? movie.vote_average.toFixed(1)
+  const rating = Number.isFinite(movie.mymovies_rating_average)
+    ? movie.mymovies_rating_average.toFixed(1)
     : "—";
 
   return (
-    <View
-      accessible
-      accessibilityLabel={`${movie.title}, ${releaseYear ?? "ano não informado"}, avaliação ${rating}`}
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`Abrir ${movie.title}, ${releaseYear ?? "ano não informado"}, avaliação ${rating}`}
       className="overflow-hidden rounded-2xl bg-[#1c1c1e]"
+      onPress={() =>
+        router.push({
+          pathname: "/movie/[id]",
+          params: { id: String(movie.id) },
+        })
+      }
+      style={({ pressed }) => ({ opacity: pressed ? 0.78 : 1 })}
     >
       <View className="aspect-2/3 w-full overflow-hidden bg-[#29292c]">
         {posterUrl ? (
@@ -76,7 +84,7 @@ function MovieCard({ movie }: MovieCardProps) {
           {releaseYear ?? "Ano não informado"}
         </Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
