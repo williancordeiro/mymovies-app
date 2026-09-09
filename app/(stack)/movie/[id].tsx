@@ -1,6 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Image } from "expo-image";
-import { router, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import {
   ActivityIndicator,
   Pressable,
@@ -90,15 +90,6 @@ function MovieContent({ movie }: { movie: MovieDetails }) {
           </View>
         )}
         <View className="absolute inset-0 bg-black/25" />
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Voltar"
-          onPress={() => router.back()}
-          className="absolute left-5 top-4 h-11 w-11 items-center justify-center rounded-full bg-black/75"
-          style={({ pressed }) => ({ opacity: pressed ? 0.65 : 1 })}
-        >
-          <Ionicons name="chevron-back" size={26} color="#ffffff" />
-        </Pressable>
       </View>
 
       <View className="px-6">
@@ -221,11 +212,13 @@ export default function MovieDetailsScreen() {
 
   if (isPending && isValidId) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-black">
-        <ActivityIndicator size="large" color="#FF8A3D" />
-        <Text className="mt-4 text-base text-[#a3a3a3]">
-          Carregando detalhes...
-        </Text>
+      <SafeAreaView className="flex-1 bg-black">
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#FF8A3D" />
+          <Text className="mt-4 text-base text-[#a3a3a3]">
+            Carregando detalhes...
+          </Text>
+        </View>
       </SafeAreaView>
     );
   }
@@ -233,14 +226,6 @@ export default function MovieDetailsScreen() {
   if (!isValidId || error || !movie) {
     return (
       <SafeAreaView className="flex-1 bg-black">
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Voltar"
-          onPress={() => router.back()}
-          className="ml-5 mt-4 h-11 w-11 items-center justify-center rounded-full bg-[#1c1c1e]"
-        >
-          <Ionicons name="chevron-back" size={26} color="#ffffff" />
-        </Pressable>
         <View className="flex-1 items-center justify-center px-8 pb-20">
           <Ionicons name="alert-circle-outline" size={56} color="#737373" />
           <Text className="mt-4 text-center text-xl font-bold text-white">
