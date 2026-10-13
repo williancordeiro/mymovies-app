@@ -50,7 +50,7 @@ export default function TabNavbar({
                 accessibilityLabel={options.tabBarAccessibilityLabel ?? label}
                 accessibilityState={{ selected }}
                 testID={options.tabBarButtonTestID}
-                className={`min-h-[58px] min-w-0 flex-1 items-center justify-center rounded-full px-1 py-1 ${selected ? "bg-[#dd5d13]" : "bg-transparent"}`}
+                className={`min-h-14.5 min-w-0 flex-1 items-center justify-center rounded-full px-1 py-1 ${selected ? "bg-[#dd5d13]" : "bg-transparent"}`}
                 style={({ pressed }) => ({ opacity: pressed ? 0.65 : 1 })}
                 onPress={() => {
                   const event = navigation.emit({
@@ -88,7 +88,7 @@ export default function TabNavbar({
           })}
         </View>
         <Pressable
-          className="h-[66px] w-[66px] items-center justify-center rounded-full bg-neutral-700/75"
+          className="h-16.5 w-16.5 items-center justify-center rounded-full bg-neutral-700/75"
           accessibilityRole="button"
           accessibilityLabel="Buscar filmes"
           onPress={() => router.push("/(stack)/search/search")}
