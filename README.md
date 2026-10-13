@@ -34,15 +34,37 @@ O diagrama representa a estrutura planejada para o banco de dados, incluindo sua
 
 O planejamento considera o período letivo de agosto a novembro de 2026 e divide o desenvolvimento em oito sprints quinzenais. A organização foi definida com base na análise das implementações anteriores, que já contemplam recursos como autenticação, perfis de usuário, catálogo, busca, detalhes e avaliações de filmes. Nesta nova versão, essas experiências servirão como referência para uma implementação revisada, com destaque para a criação e o gerenciamento de listas de filmes assistidos.
 
-| Sprint | Período | Objetivos e entregas |
-| --- | --- | --- |
-| **Sprint 1 — Descoberta e definição** | 03/08 a 16/08 | Analisar os projetos anteriores; levantar requisitos funcionais e não funcionais; definir o escopo do produto, as histórias de usuário e os critérios de aceite; organizar o backlog inicial. |
-| **Sprint 2 — UX e arquitetura** | 17/08 a 30/08 | Elaborar e validar os protótipos das telas; definir a identidade visual e os fluxos de navegação; escolher as tecnologias; estabelecer a arquitetura da aplicação e os padrões do projeto. |
-| **Sprint 3 — Dados e estrutura inicial** | 31/08 a 13/09 | Elaborar a modelagem conceitual, lógica e física do banco de dados; preparar migrations e dados iniciais; configurar os ambientes de desenvolvimento; criar a estrutura base do frontend e do backend. |
-| **Sprint 4 — Usuários e autenticação** | 14/09 a 27/09 | Implementar cadastro, autenticação e encerramento de sessão; proteger rotas; permitir consulta e atualização do perfil; adicionar validações, tratamento de erros e testes dos principais fluxos. |
-| **Sprint 5 — Catálogo de filmes** | 28/09 a 11/10 | Implementar listagem, busca, filtros e paginação; exibir filmes lançados e próximos lançamentos; desenvolver a página de detalhes; integrar a fonte de dados dos filmes e tratar estados de carregamento, erro e ausência de resultados. |
-| **Sprint 6 — Avaliações** | 12/10 a 25/10 | Permitir que usuários autenticados criem, alterem e removam suas notas; exibir a avaliação individual e a média de cada filme; aplicar regras de negócio e ampliar a cobertura de testes. |
-| **Sprint 7 — Listas de filmes assistidos** | 26/10 a 08/11 | Implementar criação, edição e exclusão de listas; permitir adicionar e remover filmes; apresentar as listas no perfil do usuário; revisar permissões, usabilidade e responsividade. |
-| **Sprint 8 — Integração e entrega** | 09/11 a 22/11 | Integrar e revisar todos os módulos; executar testes de unidade, integração e aceitação; corrigir falhas; aprimorar acessibilidade e desempenho; preparar a documentação, a implantação e a apresentação final. |
+## Checkpoints do projeto
+
+Marque cada checkpoint conforme suas entregas forem concluídas e as respectivas issues forem encerradas.
+
+- [x] **Escopo e backlog:** definir o escopo, levantar requisitos e organizar o backlog do MyMovies.
+- [x] **Experiência visual e arquitetura:** criar os protótipos e definir a identidade visual, a navegação e a arquitetura.
+- [x] **Banco de dados e estrutura:** preparar a modelagem dos dados, o ambiente e a estrutura inicial do projeto.
+- [x] **Catálogo e busca de filmes:** disponibilizar catálogo, pesquisa, detalhes dos filmes e tratamento dos estados de consulta.
+- [ ] **Cadastro, login e perfil:** implementar cadastro, autenticação, sessão e gerenciamento do perfil do usuário.
+- [ ] **Avaliações e notas:** permitir criar, alterar e remover avaliações, incluindo o cálculo da média de notas dos filmes.
+- [ ] **Listas de filmes assistidos:** permitir criar e gerenciar listas pessoais, adicionando e removendo filmes.
+- [ ] **Integração e entrega final:** integrar os módulos, executar os testes, atualizar a documentação e preparar a entrega.
+
+## Atualizações desde o último checkpoint
+
+- **Estrutura inicial do aplicativo — [PR #10](https://github.com/williancordeiro/mymovies-app/pull/10), incorporado em 04/09/2026**
+  - Inicialização do projeto com Expo, React Native e TypeScript.
+  - Configuração do Expo Router e das dependências-base.
+
+- **Página inicial — [PR #12](https://github.com/williancordeiro/mymovies-app/pull/12), incorporado em 08/09/2026**
+  - Criação da tela inicial e da navegação por abas.
+  - Integração com a API para exibir os filmes populares.
+
+- **Detalhes dos filmes — [PR #14](https://github.com/williancordeiro/mymovies-app/pull/14), incorporado em 09/09/2026**
+  - Inclusão da página de detalhes do filme.
+  - Acesso aos detalhes a partir dos cards da listagem.
+
+- **Busca de filmes e ajustes de navegação — [PR #16](https://github.com/williancordeiro/mymovies-app/pull/16), incorporado em 13/10/2026**
+  - Implementação da pesquisa integrada à API, com debounce para reduzir requisições durante a digitação.
+  - Tratamento dos estados de carregamento, erro e resultados vazios.
+  - Acesso aos detalhes pelos resultados da busca.
+  - Ajustes na navegação inferior, no retorno entre telas e nos espaçamentos.
 
 O período de **23/11 a 30/11** será reservado para ajustes decorrentes da avaliação final, correções emergenciais e consolidação da documentação do projeto.
