@@ -15,7 +15,8 @@ const icons: Record<string, { active: IconName; inactive: IconName }> = {
 export default function TabNavbar({
   state,
   descriptors,
-  navigation,
+  emitter,
+  navigateToTab,
   insets,
 }: BottomTabBarProps) {
   return (
@@ -53,17 +54,17 @@ export default function TabNavbar({
                 className={`min-h-14.5 min-w-0 flex-1 items-center justify-center rounded-full px-1 py-1 ${selected ? "bg-[#dd5d13]" : "bg-transparent"}`}
                 style={({ pressed }) => ({ opacity: pressed ? 0.65 : 1 })}
                 onPress={() => {
-                  const event = navigation.emit({
+                  const event = emitter.emit({
                     type: "tabPress",
                     target: route.key,
                     canPreventDefault: true,
                   });
                   if (!selected && !event.defaultPrevented) {
-                    navigation.navigate(route.name, route.params);
+                    navigateToTab(route.key);
                   }
                 }}
                 onLongPress={() =>
-                  navigation.emit({ type: "tabLongPress", target: route.key })
+                  emitter.emit({ type: "tabLongPress", target: route.key })
                 }
               >
                 <Ionicons
