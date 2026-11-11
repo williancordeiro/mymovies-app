@@ -43,7 +43,7 @@ function MovieCard({ movie }: MovieCardProps) {
       }
       style={({ pressed }) => ({ opacity: pressed ? 0.78 : 1 })}
     >
-      <View className="aspect-2/3 w-full overflow-hidden bg-[#29292c]">
+      <View className="aspect-[2/3] w-full overflow-hidden bg-[#29292c]">
         {posterUrl ? (
           <Image
             source={{ uri: posterUrl }}
