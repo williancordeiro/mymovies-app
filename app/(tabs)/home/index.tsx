@@ -24,14 +24,11 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView
-      edges={["top", "left", "right"]}
+      edges={["left", "right"]}
       style={{ flex: 1, backgroundColor: "#000000" }}
     >
       <View className="px-6 pb-5 pt-4">
-        <Text className="text-2xl font-semibold uppercase tracking-widest text-[#FF8A3D]">
-          My Movies
-        </Text>
-        <Text className="mt-1 text-xl font-bold text-white">Início</Text>
+        <Text className="text-xl font-bold text-white">Início</Text>
         <Text className="mt-2 text-base text-[#a3a3a3]">
           Descubra os títulos disponíveis no catálogo.
         </Text>

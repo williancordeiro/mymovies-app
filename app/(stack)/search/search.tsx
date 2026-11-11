@@ -1,7 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { FlashList } from "@shopify/flash-list";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, type TextInputInstance, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import FloatingBackButton from "../../../src/components/FloatingBackButton/FloatingBackButton";
@@ -14,7 +14,7 @@ export default function SearchScreen() {
   const [text, setText] = useState("");
   const [query, setQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<TextInputInstance>(null);
   const term = text.trim();
   const { data, isPending, isError, refetch } = useMovieSearch(query);
   const waiting = term !== query;
