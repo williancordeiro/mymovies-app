@@ -17,7 +17,7 @@ export default function UserHeaderButton({
       accessibilityLabel="Abrir conta"
       accessibilityRole="button"
       accessibilityState={{ disabled: isDisabled }}
-      className="mr-3 h-11 w-11 items-center justify-center rounded-full"
+      className="mr-4 h-16 w-16 items-center justify-center rounded-full"
       disabled={isDisabled}
       onPress={onPress}
       style={({ pressed }) => ({
@@ -26,7 +26,7 @@ export default function UserHeaderButton({
     >
       <Ionicons
         name="person-circle-outline"
-        size={40}
+        size={48}
         color="#FFFFFF"
         accessible={false}
       />

@@ -9,11 +9,11 @@ export default function TabsLayout() {
       tabBar={(props) => <TabNavbar {...props} />}
       screenOptions={{
         headerShown: true,
-        headerStyle: { backgroundColor: "#000000" },
+        headerStyle: { backgroundColor: "#000000", height: 104 },
         headerShadowVisible: false,
         headerTitleAlign: "left",
         headerTitle: () => (
-          <Text className="text-2xl font-semibold uppercase tracking-widest text-[#FF8A3D]">
+          <Text className="text-3xl font-semibold uppercase tracking-widest text-[#FF8A3D]">
             My Movies
           </Text>
         ),
