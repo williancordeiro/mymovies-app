@@ -1,6 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { DarkTheme, Stack, ThemeProvider } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useEffect, useState } from "react";
+import { restoreSession } from "../src/session/authSession";
 import "../global.css";
 
 const queryClient = new QueryClient({
@@ -23,16 +25,36 @@ const theme = {
 };
 
 export default function RootLayout() {
+  const [isSessionRestored, setIsSessionRestored] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    void restoreSession()
+      .catch(() => null)
+      .finally(() => {
+        if (isMounted) {
+          setIsSessionRestored(true);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider value={theme}>
         <StatusBar style="light" />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: "#000000" },
-          }}
-        />
+        {isSessionRestored && (
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: "#000000" },
+            }}
+          />
+        )}
       </ThemeProvider>
     </QueryClientProvider>
   );

@@ -13,7 +13,7 @@ export default function StackLayout() {
           contentStyle: { backgroundColor: "#000000" },
         }}
       />
-      {pathname !== "/search/search" && <FloatingBackButton />}
+      {pathname !== "/search/search" && pathname !== "/profile" && <FloatingBackButton />}
     </View>
   );
 }

@@ -3,7 +3,11 @@ import { router } from "expo-router";
 import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export default function FloatingBackButton() {
+type FloatingBackButtonProps = {
+  onPress?: () => void;
+};
+
+export default function FloatingBackButton({ onPress }: FloatingBackButtonProps) {
   const insets = useSafeAreaInsets();
 
   return (
@@ -19,8 +23,9 @@ export default function FloatingBackButton() {
         accessibilityRole="button"
         accessibilityLabel="Voltar"
         hitSlop={8}
-        onPress={() =>
-          router.canGoBack() ? router.back() : router.replace("/")
+        onPress={
+          onPress ??
+          (() => (router.canGoBack() ? router.back() : router.replace("/")))
         }
         className="h-[58px] w-[58px] items-center justify-center rounded-full bg-neutral-700/75"
         style={({ pressed }) => ({ opacity: pressed ? 0.65 : 1 })}
