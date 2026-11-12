@@ -11,7 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import Rating from "../../../src/components/Rating/Rating";
-import { useMovie } from "../../../src/hooks/movie";
+import { useMovie, useRateMovie } from "../../../src/hooks/movie";
 import type { MovieDetails } from "../../../src/utils/movieDetails";
 
 const IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
@@ -49,7 +49,8 @@ function DetailItem({ label, value }: { label: string; value: string }) {
   );
 }
 
-function MovieContent({ movie }: { movie: MovieDetails }) {
+function MovieContent({ movie, movieId }: { movie: MovieDetails; movieId: number }) {
+  const rateMovie = useRateMovie();
   const backdropUrl = getImageUrl(movie.backdrop_path, "w1280");
   const posterUrl = getImageUrl(movie.poster_path, "w500");
   const myMoviesRating = Number.isFinite(movie.mymovies_rating_average)
@@ -153,7 +154,14 @@ function MovieContent({ movie }: { movie: MovieDetails }) {
           </View>
         ) : null}
 
-        <Rating value={movie.user_rating} />
+        <Rating
+          movieId={movieId}
+          value={movie.user_rating}
+          isPending={rateMovie.isPending}
+          error={rateMovie.error}
+          onSubmit={(rating) => rateMovie.mutateAsync({ movieId, rating })}
+          onReset={rateMovie.reset}
+        />
 
         {movie.tagline ? (
           <Text className="mt-7 border-l-2 border-[#FF8A3D] pl-4 text-base italic leading-6 text-[#d4d4d4]">
@@ -254,7 +262,7 @@ export default function MovieDetailsScreen() {
       edges={["top", "left", "right"]}
       style={{ flex: 1, backgroundColor: "#000000" }}
     >
-      <MovieContent movie={movie} />
+      <MovieContent movie={movie} movieId={movieId} />
     </SafeAreaView>
   );
 }

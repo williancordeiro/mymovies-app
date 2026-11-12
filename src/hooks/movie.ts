@@ -1,6 +1,16 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { getMovieById, getMovies, searchMovies } from "../api/movie";
+import {
+  getMovieById,
+  getMovies,
+  rateMovie,
+  searchMovies,
+  type RateMovieError,
+  type RateMovieInput,
+  type RateMovieResponse,
+} from "../api/movie";
+import { getSession } from "../session/authSession";
+import type { MovieDetails } from "../utils/movieDetails";
 
 export const movieKeys = {
   all: ["movies"] as const,
@@ -30,5 +40,34 @@ export function useMovie(id: number) {
     queryKey: movieKeys.detail(id),
     queryFn: () => getMovieById(id),
     enabled: Number.isInteger(id) && id > 0,
+  });
+}
+
+export function useRateMovie() {
+  const queryClient = useQueryClient();
+
+  return useMutation<RateMovieResponse, RateMovieError, RateMovieInput>({
+    mutationFn: rateMovie,
+    onSuccess: (response) => {
+      const { movie_id: movieId, rating, average_rating: averageRating } = response.data;
+
+      queryClient.setQueryData<MovieDetails>(movieKeys.detail(movieId), (movie) =>
+        movie
+          ? {
+              ...movie,
+              user_rating: rating,
+              mymovies_rating_average: averageRating,
+            }
+          : movie,
+      );
+
+      void queryClient.invalidateQueries({ queryKey: movieKeys.list() });
+      void queryClient.invalidateQueries({ queryKey: [...movieKeys.all, "search"] });
+
+      const handle = getSession()?.user.handle.trim();
+      if (handle) {
+        void queryClient.invalidateQueries({ queryKey: ["users", "ratings", handle] });
+      }
+    },
   });
 }
