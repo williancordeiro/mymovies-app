@@ -91,7 +91,10 @@ export default function ProfileScreen() {
       : "Não foi possível carregar perfil. Tente novamente.";
 
     return (
-      <SafeAreaView className="flex-1 bg-black">
+      <SafeAreaView
+        className="flex-1 bg-black"
+        edges={["left", "right", "bottom"]}
+      >
         <RetryState message={message} onRetry={() => void refetchProfile()} />
         <FloatingBackButton onPress={() => router.replace("/home")} />
       </SafeAreaView>
@@ -100,7 +103,10 @@ export default function ProfileScreen() {
 
   if (!session) {
     return (
-      <SafeAreaView className="flex-1 bg-black">
+      <SafeAreaView
+        className="flex-1 bg-black"
+        edges={["left", "right", "bottom"]}
+      >
         <View className="flex-1 items-center justify-center px-8">
           <Ionicons
             name="person-circle-outline"
@@ -132,7 +138,10 @@ export default function ProfileScreen() {
 
   if (isProfilePending || !profile) {
     return (
-      <SafeAreaView className="flex-1 bg-black">
+      <SafeAreaView
+        className="flex-1 bg-black"
+        edges={["left", "right", "bottom"]}
+      >
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#FF8A3D" />
           <Text className="mt-4 text-base text-[#a3a3a3]">
@@ -145,18 +154,21 @@ export default function ProfileScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black">
+    <SafeAreaView
+      className="flex-1 bg-black"
+      edges={["left", "right", "bottom"]}
+    >
       <ScrollView
         contentContainerStyle={{ paddingBottom: 112 }}
         showsVerticalScrollIndicator={false}
       >
-        <View className="flex-row justify-end px-6">
+        <View className="relative items-center px-6 pt-5">
           <Pressable
             accessibilityLabel="Configurações do perfil"
             accessibilityRole="button"
-            className="h-11 w-11 items-center justify-center rounded-full bg-[#1c1c1e]"
+            className="absolute right-6 top-5 h-11 w-11 items-center justify-center rounded-full bg-[#1c1c1e]"
             hitSlop={8}
-            onPress={() => Alert.alert("Em Desenvolvimento")}
+            onPress={() => router.push("/config")}
             style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
           >
             <Ionicons
@@ -166,9 +178,6 @@ export default function ProfileScreen() {
               accessible={false}
             />
           </Pressable>
-        </View>
-
-        <View className="items-center px-6 pt-9">
           <View className="h-28 w-28 overflow-hidden rounded-full border-2 border-[#dd5d13] bg-[#1c1c1e]">
             {canShowAvatar ? (
               <Image
