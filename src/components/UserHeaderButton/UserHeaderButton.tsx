@@ -43,7 +43,7 @@ export default function UserHeaderButton({
       disabled={isDisabled}
       onPress={
         onPress ??
-        (() => router.push(getSession() ? "../profile" : "/auth/login"))
+        (() => router.push(getSession() ? "/profile" : "/auth/login"))
       }
       style={({ pressed }) => ({
         opacity: isDisabled ? 0.45 : pressed ? 0.65 : 1,
