@@ -3,7 +3,6 @@ import { Header } from "expo-router/build/react-navigation/elements/index";
 import { Text, View } from "react-native";
 
 import FloatingBackButton from "../../src/components/FloatingBackButton/FloatingBackButton";
-import UserHeaderButton from "../../src/components/UserHeaderButton/UserHeaderButton";
 
 export default function StackLayout() {
   const pathname = usePathname();
@@ -25,7 +24,6 @@ export default function StackLayout() {
                   My Movies
                 </Text>
               )}
-              headerRight={() => <UserHeaderButton />}
               title="My Movies"
             />
           ),
