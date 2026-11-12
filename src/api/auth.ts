@@ -123,3 +123,8 @@ export async function login(input: LoginInput): Promise<LoginResponse> {
     throw toLoginError(error);
   }
 }
+
+/** Ends the current server session when a bearer token is available. */
+export async function logout(): Promise<void> {
+  await api.post("/auth/logout");
+}
