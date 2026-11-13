@@ -13,6 +13,7 @@ export default function StackLayout() {
     <View className="flex-1 bg-black">
       <Stack
         screenOptions={{
+          animation: "slide_from_right",
           headerShown: true,
           header: () => (
             <Header

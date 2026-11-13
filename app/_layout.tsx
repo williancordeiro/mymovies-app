@@ -50,6 +50,7 @@ export default function RootLayout() {
         {isSessionRestored && (
           <Stack
             screenOptions={{
+              animation: "slide_from_right",
               headerShown: false,
               contentStyle: { backgroundColor: "#000000" },
             }}

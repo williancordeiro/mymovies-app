@@ -84,6 +84,14 @@ export default function ProfileScreen() {
   const [failedAvatarUri, setFailedAvatarUri] = useState<string | null>(null);
   const avatarUri = resolveAvatarUri(profile?.avatarFile);
   const canShowAvatar = avatarUri !== null && failedAvatarUri !== avatarUri;
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+
+    router.replace("/home");
+  };
 
   if (profileError) {
     const message = isProfileError(profileError)
@@ -96,7 +104,7 @@ export default function ProfileScreen() {
         edges={["left", "right", "bottom"]}
       >
         <RetryState message={message} onRetry={() => void refetchProfile()} />
-        <FloatingBackButton onPress={() => router.replace("/home")} />
+        <FloatingBackButton onPress={handleBack} />
       </SafeAreaView>
     );
   }
@@ -131,7 +139,7 @@ export default function ProfileScreen() {
             <Text className="font-bold text-black">Entrar</Text>
           </Pressable>
         </View>
-        <FloatingBackButton onPress={() => router.replace("/home")} />
+        <FloatingBackButton onPress={handleBack} />
       </SafeAreaView>
     );
   }
@@ -148,7 +156,7 @@ export default function ProfileScreen() {
             Carregando perfil...
           </Text>
         </View>
-        <FloatingBackButton onPress={() => router.replace("/home")} />
+        <FloatingBackButton onPress={handleBack} />
       </SafeAreaView>
     );
   }
@@ -269,7 +277,7 @@ export default function ProfileScreen() {
           )}
         </View>
       </ScrollView>
-      <FloatingBackButton onPress={() => router.replace("/home")} />
+      <FloatingBackButton onPress={handleBack} />
     </SafeAreaView>
   );
 }
