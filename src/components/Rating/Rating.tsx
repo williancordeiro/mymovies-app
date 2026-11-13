@@ -14,6 +14,7 @@ import { getSession } from "../../session/authSession";
 
 interface RatingProps {
   movieId: number;
+  movieTitle: string;
   value?: number | null;
   isPending: boolean;
   error: Error | null;
@@ -32,6 +33,7 @@ type RatingSelection = {
 
 export default function Rating({
   movieId,
+  movieTitle,
   value = null,
   isPending,
   error,
@@ -90,7 +92,9 @@ export default function Rating({
 
     try {
       await onSubmit(selectedRating);
-      AccessibilityInfo.announceForAccessibility("Avaliação salva com sucesso.");
+      AccessibilityInfo.announceForAccessibility(
+        "Avaliação salva com sucesso.",
+      );
       setIsModalVisible(false);
     } catch {
       // The mutation error remains visible and allows the user to retry.
@@ -121,7 +125,10 @@ export default function Rating({
                 key={rating}
                 accessibilityRole="radio"
                 accessibilityLabel={`Avaliar com ${rating} ${rating === 1 ? "estrela" : "estrelas"}`}
-                accessibilityState={{ checked: rating === selectedRating, disabled: isPending }}
+                accessibilityState={{
+                  checked: rating === selectedRating,
+                  disabled: isPending,
+                }}
                 disabled={isPending}
                 hitSlop={4}
                 onPress={() => openModal(rating)}
@@ -134,7 +141,7 @@ export default function Rating({
                 <Ionicons
                   name={isFilled ? "star" : "star-outline"}
                   size={32}
-                  color="#FF8A3D"
+                  color="#BA5D2B"
                 />
               </Pressable>
             );
@@ -149,23 +156,26 @@ export default function Rating({
         statusBarTranslucent
         onRequestClose={closeModal}
       >
-        <View className="flex-1 items-center justify-center bg-black/75 px-6">
+        <View className="flex-1 items-center justify-center bg-black/75 px-4">
           <View
             accessibilityViewIsModal
-            className="w-full max-w-sm rounded-lg border border-[#343434] bg-[#1c1c1e] px-6 pb-5 pt-6"
+            className="w-full max-w-sm rounded-[20px] border border-[#3b3b39] bg-[#171716] px-4 pb-5 pt-6"
           >
-            <Text accessibilityRole="header" className="text-xl font-bold text-white">
-              Sua avaliação
+            <Text
+              accessibilityRole="header"
+              className="text-center text-xl font-bold text-white"
+            >
+              Avalie este filme
             </Text>
-            <Text className="mt-5 text-xl font-bold text-white">
-              Quantas estrelas você dá para este filme?
-            </Text>
-            <Text className="mt-2 text-sm leading-5 text-[#a3a3a3]">
-              Escolha uma nota de 1 a 5 estrelas.
+            <Text
+              numberOfLines={2}
+              className="mt-2 text-center text-sm leading-5 text-[#a3a3a3]"
+            >
+              {movieTitle}
             </Text>
             <View
               accessibilityRole="radiogroup"
-              className="mt-5 flex-row justify-between"
+              className="mt-6 flex-row justify-center"
             >
               {RATING_OPTIONS.map((rating) => {
                 const isSelected = rating <= selectedRating;
@@ -175,7 +185,10 @@ export default function Rating({
                     key={rating}
                     accessibilityRole="radio"
                     accessibilityLabel={`${rating} ${rating === 1 ? "estrela" : "estrelas"}`}
-                    accessibilityState={{ checked: selectedRating === rating, disabled: isPending }}
+                    accessibilityState={{
+                      checked: selectedRating === rating,
+                      disabled: isPending,
+                    }}
                     disabled={isPending}
                     hitSlop={4}
                     onPress={() =>
@@ -188,23 +201,31 @@ export default function Rating({
                     }
                     className="h-11 w-11 items-center justify-center rounded-full"
                     style={({ pressed }) => ({
-                      backgroundColor: pressed ? "#262626" : "transparent",
+                      backgroundColor: pressed ? "#BA5D2B" : "transparent",
                       opacity: isPending ? 0.5 : pressed ? 0.75 : 1,
                     })}
                   >
                     <Ionicons
                       name={isSelected ? "star" : "star-outline"}
-                      size={29}
-                      color="#FF8A3D"
+                      size={36}
+                      color="#BA5D2B"
                     />
                   </Pressable>
                 );
               })}
             </View>
+            <Text
+              accessibilityLiveRegion="polite"
+              className="mt-3 text-center text-sm font-medium text-[#d4d4d4]"
+            >
+              {selectedRating
+                ? `${selectedRating} de 5 ${selectedRating === 1 ? "estrela" : "estrelas"}`
+                : "Selecione uma nota"}
+            </Text>
             {error ? (
               <Text
                 accessibilityLiveRegion="assertive"
-                className="mt-4 text-sm leading-5 text-[#ff8a80]"
+                className="mt-4 text-center text-sm leading-5 text-[#ff8a80]"
               >
                 {error.message}
               </Text>
@@ -215,20 +236,32 @@ export default function Rating({
                 accessibilityState={{ disabled: isPending }}
                 disabled={isPending}
                 onPress={closeModal}
-                className="min-h-12 flex-1 items-center justify-center rounded-lg border border-[#4a4a4c] px-4"
-                style={({ pressed }) => ({ opacity: isPending ? 0.5 : pressed ? 0.72 : 1 })}
+                className="min-h-12 flex-1 items-center justify-center rounded-xl border border-[#4a4a4c] bg-[#232322] px-4"
+                style={({ pressed }) => ({
+                  opacity: isPending ? 0.5 : pressed ? 0.72 : 1,
+                })}
               >
                 <Text className="font-bold text-white">Cancelar</Text>
               </Pressable>
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={isPending ? "Salvando avaliação" : "Confirmar avaliação"}
-                accessibilityState={{ disabled: isPending || selectedRating === 0, busy: isPending }}
+                accessibilityLabel={
+                  isPending ? "Salvando avaliação" : "Confirmar avaliação"
+                }
+                accessibilityState={{
+                  disabled: isPending || selectedRating === 0,
+                  busy: isPending,
+                }}
                 disabled={isPending || selectedRating === 0}
                 onPress={() => void submit()}
-                className="min-h-12 flex-1 items-center justify-center rounded-lg bg-[#dd5d13] px-4"
+                className="min-h-12 flex-1 items-center justify-center rounded-xl bg-[#BA5D2B] px-4"
                 style={({ pressed }) => ({
-                  opacity: isPending || selectedRating === 0 ? 0.5 : pressed ? 0.72 : 1,
+                  opacity:
+                    isPending || selectedRating === 0
+                      ? 0.5
+                      : pressed
+                        ? 0.72
+                        : 1,
                 })}
               >
                 {isPending ? (

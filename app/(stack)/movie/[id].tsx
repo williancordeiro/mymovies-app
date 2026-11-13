@@ -156,6 +156,7 @@ function MovieContent({ movie, movieId }: { movie: MovieDetails; movieId: number
 
         <Rating
           movieId={movieId}
+          movieTitle={movie.title}
           value={movie.user_rating}
           isPending={rateMovie.isPending}
           error={rateMovie.error}
