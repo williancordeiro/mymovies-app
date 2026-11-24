@@ -1,4 +1,5 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
 import {
@@ -11,6 +12,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import Rating from "../../../src/components/Rating/Rating";
+import { APP_COLORS } from "../../../src/constants/colors";
 import { useMovie, useRateMovie } from "../../../src/hooks/movie";
 import type { MovieDetails } from "../../../src/utils/movieDetails";
 
@@ -113,9 +115,11 @@ function MovieContent({ movie, movieId }: { movie: MovieDetails; movieId: number
           </View>
 
           <View className="mb-1 flex-1 flex-row items-center gap-2">
-            <View className="h-10 w-10 items-center justify-center rounded-full bg-[#FF8A3D]">
-              <Ionicons name="star" size={19} color="#111111" />
-            </View>
+            <MaterialCommunityIcons
+              name="star-circle"
+              size={40}
+              color={APP_COLORS.ratingStar}
+            />
             <View>
               <Text className="text-xl font-bold text-white">
                 {myMoviesRating}
@@ -165,7 +169,7 @@ function MovieContent({ movie, movieId }: { movie: MovieDetails; movieId: number
         />
 
         {movie.tagline ? (
-          <Text className="mt-7 border-l-2 border-[#FF8A3D] pl-4 text-base italic leading-6 text-[#d4d4d4]">
+          <Text className="mt-7 border-l-2 border-primary pl-4 text-base italic leading-6 text-[#d4d4d4]">
             {movie.tagline}
           </Text>
         ) : null}
@@ -223,7 +227,7 @@ export default function MovieDetailsScreen() {
     return (
       <SafeAreaView className="flex-1 bg-black">
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#FF8A3D" />
+          <ActivityIndicator size="large" color={APP_COLORS.primary} />
           <Text className="mt-4 text-base text-[#a3a3a3]">
             Carregando detalhes...
           </Text>
@@ -247,7 +251,7 @@ export default function MovieDetailsScreen() {
             <Pressable
               accessibilityRole="button"
               onPress={() => refetch()}
-              className="mt-6 rounded-full bg-[#dd5d13] px-6 py-3"
+              className="mt-6 rounded-full bg-primary px-6 py-3"
               style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
             >
               <Text className="font-semibold text-white">Tentar novamente</Text>

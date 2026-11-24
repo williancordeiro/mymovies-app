@@ -21,7 +21,7 @@ export default function StackLayout() {
               headerStyle={{ backgroundColor: "#000000", height: 104 }}
               headerTitleAlign="left"
               headerTitle={() => (
-                <Text className="text-3xl font-semibold uppercase tracking-widest text-[#FF8A3D]">
+                <Text className="text-3xl font-semibold uppercase tracking-widest text-primary">
                   My Movies
                 </Text>
               )}

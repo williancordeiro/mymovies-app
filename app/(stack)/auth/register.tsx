@@ -18,6 +18,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { z } from "zod";
 
 import { useRegister } from "../../../src/hooks/auth";
+import { APP_COLORS } from "../../../src/constants/colors";
 import { isRegisterError } from "../../../src/utils/auth";
 
 const registerSchema = z.object({
@@ -127,7 +128,7 @@ export default function RegisterScreen() {
         >
           <View className="w-full self-center" style={{ maxWidth: 480 }}>
             <View className="mb-10 items-center">
-              <Text className="text-[42px] font-bold leading-[50px] text-[#C45E25]">
+              <Text className="text-[42px] font-bold leading-[50px] text-primary">
                 My Movies
               </Text>
               <Text className="mt-5 text-base leading-6 text-[#8A8A8F]">
@@ -222,7 +223,7 @@ export default function RegisterScreen() {
               accessibilityRole="button"
               accessibilityLabel="Criar conta"
               accessibilityState={{ disabled: isPending, busy: isPending }}
-              className="mb-[74px] mt-9 min-h-[60px] items-center justify-center rounded-[14px] bg-[#C45E25] px-6"
+              className="mb-[74px] mt-9 min-h-[60px] items-center justify-center rounded-[14px] bg-primary px-6"
               disabled={isPending}
               onPress={() => {
                 void submit();
@@ -282,11 +283,11 @@ function FormField({
         render={({ field: { onBlur, onChange, value } }) => (
           <View
             className="min-h-[58px] flex-row items-center rounded-[14px] border-2 bg-[#292929] px-5"
-            style={{ borderColor: error ? "#ef4444" : "#C45E25" }}
+            style={{ borderColor: error ? "#ef4444" : APP_COLORS.primary }}
           >
             <Ionicons
               accessible={false}
-              color="#C45E25"
+              color={APP_COLORS.primary}
               name={icon}
               size={23}
             />
@@ -302,7 +303,7 @@ function FormField({
               onChangeText={onChange}
               placeholder={placeholder}
               placeholderTextColor="#8A8A8F"
-              selectionColor="#C45E25"
+              selectionColor={APP_COLORS.primary}
               underlineColorAndroid="transparent"
               value={value}
             />

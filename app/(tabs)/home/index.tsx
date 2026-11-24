@@ -5,6 +5,7 @@ import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import MovieCard from "../../../src/components/MovieCard/MovieCard";
+import { APP_COLORS } from "../../../src/constants/colors";
 import { useMovies } from "../../../src/hooks/movie";
 import type { Movie } from "../../../src/utils/movie";
 
@@ -51,7 +52,7 @@ export default function HomeScreen() {
           <View className="min-h-80 items-center justify-center px-8">
             {isPending ? (
               <>
-                <ActivityIndicator size="large" color="#FF8A3D" />
+                <ActivityIndicator size="large" color={APP_COLORS.primary} />
                 <Text className="mt-4 text-base text-[#a3a3a3]">
                   Carregando filmes...
                 </Text>
@@ -72,7 +73,7 @@ export default function HomeScreen() {
                 </Text>
                 <Pressable
                   accessibilityRole="button"
-                  className="mt-5 rounded-full bg-[#dd5d13] px-6 py-3"
+                  className="mt-5 rounded-full bg-primary px-6 py-3"
                   onPress={() => refetch()}
                   style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
                 >

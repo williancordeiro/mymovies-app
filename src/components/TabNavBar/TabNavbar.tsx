@@ -51,7 +51,7 @@ export default function TabNavbar({
                 accessibilityLabel={options.tabBarAccessibilityLabel ?? label}
                 accessibilityState={{ selected }}
                 testID={options.tabBarButtonTestID}
-                className={`min-h-[58px] min-w-0 flex-1 items-center justify-center rounded-full px-1 py-1 ${selected ? "bg-[#dd5d13]" : "bg-transparent"}`}
+                className={`min-h-[58px] min-w-0 flex-1 items-center justify-center rounded-full px-1 py-1 ${selected ? "bg-primary" : "bg-transparent"}`}
                 style={({ pressed }) => ({ opacity: pressed ? 0.65 : 1 })}
                 onPress={() => {
                   const event = emitter.emit({

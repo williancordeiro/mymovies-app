@@ -4,6 +4,7 @@ import { router } from "expo-router";
 import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 
+import { APP_COLORS } from "../../constants/colors";
 import type { Movie } from "../../utils/movie";
 
 const POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
@@ -68,7 +69,7 @@ function MovieCard({ movie }: MovieCardProps) {
         )}
 
         <View className="absolute right-2 top-2 flex-row items-center gap-1 rounded-full bg-black/80 px-2 py-1">
-          <Ionicons name="star" size={13} color="#FF8A3D" accessible={false} />
+          <Ionicons name="star" size={13} color={APP_COLORS.ratingStar} accessible={false} />
           <Text className="text-xs font-bold text-white">{rating}</Text>
         </View>
       </View>

@@ -11,6 +11,7 @@ import {
 } from "react-native";
 
 import { getSession } from "../../session/authSession";
+import { APP_COLORS } from "../../constants/colors";
 
 interface RatingProps {
   movieId: number;
@@ -141,7 +142,7 @@ export default function Rating({
                 <Ionicons
                   name={isFilled ? "star" : "star-outline"}
                   size={32}
-                  color="#BA5D2B"
+                  color={APP_COLORS.ratingStar}
                 />
               </Pressable>
             );
@@ -201,14 +202,14 @@ export default function Rating({
                     }
                     className="h-11 w-11 items-center justify-center rounded-full"
                     style={({ pressed }) => ({
-                      backgroundColor: pressed ? "#BA5D2B" : "transparent",
+                      backgroundColor: pressed ? "#262626" : "transparent",
                       opacity: isPending ? 0.5 : pressed ? 0.75 : 1,
                     })}
                   >
                     <Ionicons
                       name={isSelected ? "star" : "star-outline"}
                       size={36}
-                      color="#BA5D2B"
+                      color={APP_COLORS.ratingStar}
                     />
                   </Pressable>
                 );
@@ -254,7 +255,7 @@ export default function Rating({
                 }}
                 disabled={isPending || selectedRating === 0}
                 onPress={() => void submit()}
-                className="min-h-12 flex-1 items-center justify-center rounded-xl bg-[#BA5D2B] px-4"
+                className="min-h-12 flex-1 items-center justify-center rounded-xl bg-primary px-4"
                 style={({ pressed }) => ({
                   opacity:
                     isPending || selectedRating === 0

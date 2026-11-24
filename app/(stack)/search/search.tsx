@@ -19,6 +19,7 @@ import {
 
 import FloatingBackButton from "../../../src/components/FloatingBackButton/FloatingBackButton";
 import SearchResultCard from "../../../src/components/SearchResultCard/SearchResultCard";
+import { APP_COLORS } from "../../../src/constants/colors";
 import { useMovieSearch } from "../../../src/hooks/movie";
 import type { Movie } from "../../../src/utils/movie";
 
@@ -74,7 +75,7 @@ export default function SearchScreen() {
       >
         <View style={{ flex: 1 }}>
           <View className="px-6 pb-5 pt-4">
-            <Text className="text-2xl font-semibold uppercase tracking-widest text-[#FF8A3D]">
+            <Text className="text-2xl font-semibold uppercase tracking-widest text-primary">
               My Movies
             </Text>
             <Text className="mt-1 text-xl font-bold text-white">
@@ -112,7 +113,7 @@ export default function SearchScreen() {
                 >
                   {loading ? (
                     <>
-                      <ActivityIndicator size="large" color="#FF8A3D" />
+                      <ActivityIndicator size="large" color={APP_COLORS.primary} />
                       <Text className="mt-4 text-base text-[#a3a3a3]">
                         Buscando filmes...
                       </Text>
@@ -133,7 +134,7 @@ export default function SearchScreen() {
                       </Text>
                       <Pressable
                         accessibilityRole="button"
-                        className="mt-5 rounded-full bg-[#dd5d13] px-6 py-3"
+                        className="mt-5 rounded-full bg-primary px-6 py-3"
                         onPress={() => refetch()}
                         style={({ pressed }) => ({
                           opacity: pressed ? 0.7 : 1,
@@ -195,7 +196,7 @@ export default function SearchScreen() {
                 accessibilityLabel="Nome do filme"
                 placeholder="Nome do filme"
                 placeholderTextColor="#A3A3A3"
-                selectionColor="#FF8A3D"
+                selectionColor={APP_COLORS.primary}
                 underlineColorAndroid="transparent"
                 className="min-h-12 flex-1 text-base text-white"
                 style={{ minWidth: 0 }}

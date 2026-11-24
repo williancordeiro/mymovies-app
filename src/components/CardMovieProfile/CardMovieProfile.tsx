@@ -4,6 +4,8 @@ import { router } from "expo-router";
 import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 
+import { APP_COLORS } from "../../constants/colors";
+
 const POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
 
 export interface CardMovieProfileProps {
@@ -48,7 +50,7 @@ function CardMovieProfile({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`Abrir filme ${title}. ${getRatingLabel(normalizedRating)}`}
-      className="flex-row overflow-hidden rounded-2xl border border-[#dd5d13] bg-[#1c1c1e]"
+      className="flex-row overflow-hidden rounded-2xl border border-primary bg-[#1c1c1e]"
       hitSlop={4}
       onPress={() =>
         router.push({
@@ -91,7 +93,7 @@ function CardMovieProfile({
               <Ionicons
                 key={index}
                 accessible={false}
-                color="#FF8A3D"
+                color={APP_COLORS.ratingStar}
                 name={index < filledStars ? "star" : "star-outline"}
                 size={18}
               />
