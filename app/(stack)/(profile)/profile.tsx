@@ -14,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import CardMovieProfile from "../../../src/components/CardMovieProfile/CardMovieProfile";
 import FloatingBackButton from "../../../src/components/FloatingBackButton/FloatingBackButton";
+import { APP_COLORS } from "../../../src/constants/colors";
 import { useProfile } from "../../../src/hooks/profile";
 import { useUserRatings } from "../../../src/hooks/users";
 import { getSession } from "../../../src/session/authSession";
@@ -47,7 +48,7 @@ function RetryState({
       <Ionicons
         name="alert-circle-outline"
         size={38}
-        color="#FF8A3D"
+        color={APP_COLORS.primary}
         accessible={false}
       />
       <Text className="mt-4 text-center text-base leading-6 text-[#d4d4d4]">
@@ -56,12 +57,12 @@ function RetryState({
       <Pressable
         accessibilityLabel="Tentar novamente"
         accessibilityRole="button"
-        className="mt-5 rounded-full border border-[#FF8A3D] px-5 py-3"
+        className="mt-5 rounded-full border border-primary px-5 py-3"
         hitSlop={8}
         onPress={onRetry}
         style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
       >
-        <Text className="font-semibold text-[#FF8A3D]">Tentar novamente</Text>
+        <Text className="font-semibold text-primary">Tentar novamente</Text>
       </Pressable>
     </View>
   );
@@ -84,6 +85,14 @@ export default function ProfileScreen() {
   const [failedAvatarUri, setFailedAvatarUri] = useState<string | null>(null);
   const avatarUri = resolveAvatarUri(profile?.avatarFile);
   const canShowAvatar = avatarUri !== null && failedAvatarUri !== avatarUri;
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+
+    router.replace("/home");
+  };
 
   if (profileError) {
     const message = isProfileError(profileError)
@@ -96,7 +105,7 @@ export default function ProfileScreen() {
         edges={["left", "right", "bottom"]}
       >
         <RetryState message={message} onRetry={() => void refetchProfile()} />
-        <FloatingBackButton onPress={() => router.replace("/home")} />
+        <FloatingBackButton onPress={handleBack} />
       </SafeAreaView>
     );
   }
@@ -111,7 +120,7 @@ export default function ProfileScreen() {
           <Ionicons
             name="person-circle-outline"
             size={56}
-            color="#FF8A3D"
+            color={APP_COLORS.primary}
             accessible={false}
           />
           <Text className="mt-5 text-center text-lg font-bold text-white">
@@ -123,7 +132,7 @@ export default function ProfileScreen() {
           <Pressable
             accessibilityLabel="Ir para login"
             accessibilityRole="button"
-            className="mt-6 rounded-full bg-[#FF8A3D] px-6 py-3"
+            className="mt-6 rounded-full bg-primary px-6 py-3"
             hitSlop={8}
             onPress={() => router.replace("/auth/login")}
             style={({ pressed }) => ({ opacity: pressed ? 0.72 : 1 })}
@@ -131,7 +140,7 @@ export default function ProfileScreen() {
             <Text className="font-bold text-black">Entrar</Text>
           </Pressable>
         </View>
-        <FloatingBackButton onPress={() => router.replace("/home")} />
+        <FloatingBackButton onPress={handleBack} />
       </SafeAreaView>
     );
   }
@@ -143,12 +152,12 @@ export default function ProfileScreen() {
         edges={["left", "right", "bottom"]}
       >
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#FF8A3D" />
+          <ActivityIndicator size="large" color={APP_COLORS.primary} />
           <Text className="mt-4 text-base text-[#a3a3a3]">
             Carregando perfil...
           </Text>
         </View>
-        <FloatingBackButton onPress={() => router.replace("/home")} />
+        <FloatingBackButton onPress={handleBack} />
       </SafeAreaView>
     );
   }
@@ -178,7 +187,7 @@ export default function ProfileScreen() {
               accessible={false}
             />
           </Pressable>
-          <View className="h-28 w-28 overflow-hidden rounded-full border-2 border-[#dd5d13] bg-[#1c1c1e]">
+          <View className="h-28 w-28 overflow-hidden rounded-full border-2 border-primary bg-[#1c1c1e]">
             {canShowAvatar ? (
               <Image
                 accessibilityLabel={`Avatar de ${profile.username}`}
@@ -212,7 +221,7 @@ export default function ProfileScreen() {
           <Pressable
             accessibilityLabel="Editar perfil"
             accessibilityRole="button"
-            className="mt-6 flex-row items-center gap-2 rounded-full border bg-[#dd5d13] px-7 py-3"
+            className="mt-6 flex-row items-center gap-2 rounded-full border bg-primary px-7 py-3"
             hitSlop={8}
             onPress={() => Alert.alert("Em Desenvolvimento")}
             style={({ pressed }) => ({ opacity: pressed ? 0.72 : 1 })}
@@ -243,7 +252,7 @@ export default function ProfileScreen() {
             />
           ) : isRatingsPending ? (
             <View className="items-center py-10">
-              <ActivityIndicator color="#FF8A3D" />
+              <ActivityIndicator color={APP_COLORS.primary} />
               <Text className="mt-3 text-sm text-[#a3a3a3]">
                 Carregando avaliações...
               </Text>
@@ -259,7 +268,7 @@ export default function ProfileScreen() {
               <Ionicons
                 name="star-outline"
                 size={34}
-                color="#a3a3a3"
+                color={APP_COLORS.ratingStar}
                 accessible={false}
               />
               <Text className="mt-3 text-center text-base text-[#d4d4d4]">
@@ -269,7 +278,7 @@ export default function ProfileScreen() {
           )}
         </View>
       </ScrollView>
-      <FloatingBackButton onPress={() => router.replace("/home")} />
+      <FloatingBackButton onPress={handleBack} />
     </SafeAreaView>
   );
 }

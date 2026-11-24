@@ -13,7 +13,7 @@ export default function TabsLayout() {
         headerShadowVisible: false,
         headerTitleAlign: "left",
         headerTitle: () => (
-          <Text className="text-3xl font-semibold uppercase tracking-widest text-[#FF8A3D]">
+          <Text className="text-3xl font-semibold uppercase tracking-widest text-primary">
             My Movies
           </Text>
         ),

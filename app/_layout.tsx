@@ -3,6 +3,7 @@ import { DarkTheme, Stack, ThemeProvider } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { restoreSession } from "../src/session/authSession";
+import { APP_COLORS } from "../src/constants/colors";
 import "../global.css";
 
 const queryClient = new QueryClient({
@@ -20,7 +21,7 @@ const theme = {
     ...DarkTheme.colors,
     background: "#000000",
     card: "#262626",
-    primary: "#FF8A3D",
+    primary: APP_COLORS.primary,
   },
 };
 
@@ -50,6 +51,7 @@ export default function RootLayout() {
         {isSessionRestored && (
           <Stack
             screenOptions={{
+              animation: "slide_from_right",
               headerShown: false,
               contentStyle: { backgroundColor: "#000000" },
             }}

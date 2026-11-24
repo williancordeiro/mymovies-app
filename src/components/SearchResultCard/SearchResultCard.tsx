@@ -4,6 +4,7 @@ import { router } from "expo-router";
 import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 
+import { APP_COLORS } from "../../constants/colors";
 import type { Movie } from "../../utils/movie";
 
 interface SearchResultCardProps {
@@ -61,7 +62,7 @@ function SearchResultCard({ movie }: SearchResultCardProps) {
         <View className="mt-3 flex-row items-center justify-between gap-3">
           <Text className="min-w-0 flex-1 text-sm text-[#a3a3a3]">{year}</Text>
           <View className="shrink-0 flex-row items-center gap-1">
-            <Ionicons name="star" size={15} color="#FF8A3D" accessible={false} />
+            <Ionicons name="star" size={15} color={APP_COLORS.ratingStar} accessible={false} />
             <Text className="text-sm font-semibold text-white">{rating}</Text>
           </View>
         </View>

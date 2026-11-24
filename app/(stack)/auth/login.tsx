@@ -19,6 +19,7 @@ import { z } from "zod";
 
 import { useLogin } from "../../../src/hooks/auth";
 import { isLoginError } from "../../../src/utils/auth";
+import { APP_COLORS } from "../../../src/constants/colors";
 
 const loginSchema = z.object({
   email: z
@@ -83,7 +84,7 @@ export default function LoginScreen() {
         >
           <View className="w-full self-center" style={{ maxWidth: 480 }}>
             <View className="mb-10 items-center">
-              <Text className="text-[42px] font-bold leading-[50px] text-[#C45E25]">
+              <Text className="text-[42px] font-bold leading-[50px] text-primary">
                 My Movies
               </Text>
               <Text className="mt-5 text-base leading-6 text-[#8A8A8F]">
@@ -144,7 +145,7 @@ export default function LoginScreen() {
               }}
               style={({ pressed }) => ({ opacity: isPending ? 0.45 : pressed ? 0.7 : 1 })}
             >
-              <Text className="text-sm font-semibold text-[#C45E25]">Esqueci minha senha</Text>
+              <Text className="text-sm font-semibold text-primary">Esqueci minha senha</Text>
             </Pressable>
 
             {generalError && (
@@ -160,7 +161,7 @@ export default function LoginScreen() {
               accessibilityRole="button"
               accessibilityLabel="Entrar"
               accessibilityState={{ disabled: isPending, busy: isPending }}
-              className="mt-7 min-h-[60px] items-center justify-center rounded-[14px] bg-[#C45E25] px-6"
+              className="mt-7 min-h-[60px] items-center justify-center rounded-[14px] bg-primary px-6"
               disabled={isPending}
               onPress={() => {
                 void submit();
@@ -186,7 +187,7 @@ export default function LoginScreen() {
                 onPress={() => router.push("/auth/register")}
                 style={({ pressed }) => ({ opacity: isPending ? 0.45 : pressed ? 0.7 : 1 })}
               >
-                <Text className="text-base font-bold text-[#C45E25]">Nova Conta</Text>
+                <Text className="text-base font-bold text-primary">Nova Conta</Text>
               </Pressable>
             </View>
           </View>
@@ -231,9 +232,9 @@ function FormField({
         render={({ field: { onBlur, onChange, value } }) => (
           <View
             className="min-h-[58px] flex-row items-center rounded-[14px] border-2 bg-[#292929] px-5"
-            style={{ borderColor: error ? "#ef4444" : "#C45E25" }}
+            style={{ borderColor: error ? "#ef4444" : APP_COLORS.primary }}
           >
-            <Ionicons accessible={false} color="#C45E25" name={icon} size={23} />
+            <Ionicons accessible={false} color={APP_COLORS.primary} name={icon} size={23} />
             <TextInput
               {...inputProps}
               accessibilityHint={error}
@@ -245,7 +246,7 @@ function FormField({
               onChangeText={onChange}
               placeholder={placeholder}
               placeholderTextColor="#8A8A8F"
-              selectionColor="#C45E25"
+              selectionColor={APP_COLORS.primary}
               underlineColorAndroid="transparent"
               value={value}
             />
