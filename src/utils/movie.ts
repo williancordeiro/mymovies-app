@@ -16,6 +16,16 @@ export interface Movie {
   vote_count: number;
   mymovies_rating_average: number;
   user_rating: number | null;
+  user_favorited: boolean;
+}
+
+/** Data needed to render a movie card, including the smaller favorite DTO. */
+export interface MovieCardData {
+  id: number;
+  title: string;
+  poster_path: string | null;
+  release_date: string | null;
+  mymovies_rating_average?: number;
 }
 
 export interface MovieGenre {
