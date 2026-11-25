@@ -11,12 +11,25 @@ Esta aplicação é uma nova implementação do projeto My Movies, desenvolvida 
 
 ## Tecnologias utilizadas
 
-O aplicativo será desenvolvido com as seguintes tecnologias:
+O aplicativo utiliza as seguintes tecnologias e bibliotecas:
 
 | Tecnologia | Breve descrição |
 | --- | --- |
-| **React Native** | Framework utilizado para o desenvolvimento da aplicação móvel multiplataforma. |
-| **Expo** | Plataforma e conjunto de ferramentas empregados para simplificar o desenvolvimento, os testes e a distribuição do aplicativo. |
+| **React e React Native** | Base para a construção da interface móvel multiplataforma. |
+| **TypeScript** | Tipagem estática aplicada ao código do aplicativo. |
+| **Expo** | Plataforma e ferramentas para desenvolvimento e execução do aplicativo. |
+| **Expo Router** | Roteamento e navegação baseados em arquivos. |
+| **React Navigation** | Recursos de navegação utilizados pelo Expo Router. |
+| **TanStack Query** | Gerenciamento de consultas, cache e sincronização de dados remotos. |
+| **Axios** | Cliente HTTP para comunicação com a API. |
+| **React Hook Form e Zod** | Gerenciamento e validação de formulários. |
+| **Expo SecureStore** | Armazenamento seguro da sessão em dispositivos nativos. |
+| **Expo Image** | Exibição otimizada das imagens dos filmes. |
+| **FlashList** | Renderização eficiente das listas de filmes. |
+| **NativeWind e Tailwind CSS** | Estilização da interface com classes utilitárias. |
+| **Zustand** | Gerenciamento de estado da aplicação. |
+| **Expo Vector Icons** | Biblioteca de ícones da interface. |
+| **ESLint e Prettier Plugin Tailwind CSS** | Análise do código e ordenação das classes Tailwind CSS. |
 
 ## Protótipos de telas
 
