@@ -2,7 +2,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { getMovieById } from "../api/movie";
 import { getUserRatings } from "../api/users";
-import { movieKeys } from "./movie";
+import { useAuthSession } from "./auth";
+import { getMovieSessionScope, movieKeys } from "./movie";
 import {
   toProfileError,
   type ProfileError,
@@ -36,11 +37,13 @@ async function mapWithConcurrency<T, R>(
 
 export function useUserRatings(handle: string | undefined) {
   const queryClient = useQueryClient();
+  const { session, generation, isRestored } = useAuthSession();
+  const movieScope = getMovieSessionScope(session?.user.id, generation);
   const normalizedHandle = handle?.trim() ?? "";
 
   return useQuery<ProfileMovieRating[], ProfileError>({
     queryKey: userKeys.ratings(normalizedHandle),
-    enabled: normalizedHandle.length > 0,
+    enabled: isRestored && normalizedHandle.length > 0,
     retry: (failureCount, error) =>
       error.kind !== "unauthorized" && error.kind !== "notFound" && failureCount < 2,
     queryFn: async () => {
@@ -53,7 +56,7 @@ export function useUserRatings(handle: string | undefined) {
           2,
           async (rating) => {
             const movie = await queryClient.fetchQuery({
-              queryKey: movieKeys.detail(rating.movieId),
+              queryKey: movieKeys.detail(movieScope, rating.movieId),
               queryFn: () => getMovieById(rating.movieId),
             });
 

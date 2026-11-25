@@ -20,6 +20,52 @@ export class SessionStorageError extends Error {
 }
 
 let currentSession: AuthSession | null = null;
+let sessionGeneration = 0;
+let sessionRestored = false;
+const listeners = new Set<() => void>();
+
+export interface AuthSessionSnapshot {
+  session: AuthSession | null;
+  generation: number;
+  isRestored: boolean;
+}
+
+let sessionSnapshot: AuthSessionSnapshot = {
+  session: currentSession,
+  generation: sessionGeneration,
+  isRestored: sessionRestored,
+};
+
+function refreshSnapshot(): void {
+  sessionSnapshot = {
+    session: currentSession,
+    generation: sessionGeneration,
+    isRestored: sessionRestored,
+  };
+}
+
+function notifySessionChange(): void {
+  refreshSnapshot();
+  listeners.forEach((listener) => listener());
+}
+
+function setCurrentSession(session: AuthSession | null): void {
+  if (currentSession?.token !== session?.token) {
+    sessionGeneration += 1;
+  }
+  currentSession = session;
+  notifySessionChange();
+}
+
+export function subscribeToAuthSession(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+export function getAuthSessionSnapshot(): AuthSessionSnapshot {
+  getSession();
+  return sessionSnapshot;
+}
 
 function getJwtExpiration(token: string): number | null {
   const payload = token.split(".")[1];
@@ -108,13 +154,15 @@ export async function persistSession(response: LoginResponse): Promise<AuthSessi
     throw new SessionStorageError();
   }
 
-  currentSession = session;
+  setCurrentSession(session);
   return session;
 }
 
 /** Restores a valid session saved by a native app. Web has no persisted session. */
 export async function restoreSession(): Promise<AuthSession | null> {
   if (Platform.OS === "web") {
+    sessionRestored = true;
+    notifySessionChange();
     return getSession();
   }
 
@@ -127,7 +175,9 @@ export async function restoreSession(): Promise<AuthSession | null> {
   }
 
   if (!serializedSession) {
-    currentSession = null;
+    setCurrentSession(null);
+    sessionRestored = true;
+    notifySessionChange();
     return null;
   }
 
@@ -135,15 +185,21 @@ export async function restoreSession(): Promise<AuthSession | null> {
     const storedSession: unknown = JSON.parse(serializedSession);
 
     if (!isStoredSession(storedSession) || isExpired(storedSession)) {
-      currentSession = null;
+      setCurrentSession(null);
       await removeStoredSession();
+      sessionRestored = true;
+      notifySessionChange();
       return null;
     }
 
-    currentSession = storedSession;
+    setCurrentSession(storedSession);
+    sessionRestored = true;
+    notifySessionChange();
     return currentSession;
   } catch {
-    currentSession = null;
+    setCurrentSession(null);
+    sessionRestored = true;
+    notifySessionChange();
 
     try {
       await removeStoredSession();
@@ -161,7 +217,7 @@ export function getSession(): AuthSession | null {
   }
 
   if (isExpired(currentSession)) {
-    currentSession = null;
+    setCurrentSession(null);
     void removeStoredSession().catch(() => undefined);
     return null;
   }
@@ -174,7 +230,7 @@ export function getSessionToken(): string | null {
 }
 
 export async function clearSession(): Promise<void> {
-  currentSession = null;
+  setCurrentSession(null);
 
   try {
     await removeStoredSession();
