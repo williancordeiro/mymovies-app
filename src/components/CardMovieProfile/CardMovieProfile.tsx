@@ -44,7 +44,8 @@ function CardMovieProfile({
     rating !== null && Number.isFinite(rating)
       ? Math.min(5, Math.max(0, rating))
       : null;
-  const filledStars = normalizedRating === null ? 0 : Math.round(normalizedRating);
+  const filledStars =
+    normalizedRating === null ? 0 : Math.round(normalizedRating);
 
   return (
     <Pressable
@@ -77,17 +78,28 @@ function CardMovieProfile({
             accessibilityRole="image"
             className="flex-1 items-center justify-center"
           >
-            <Ionicons name="film-outline" size={31} color="#8e8e93" accessible={false} />
+            <Ionicons
+              name="film-outline"
+              size={31}
+              color="#8e8e93"
+              accessible={false}
+            />
           </View>
         )}
       </View>
 
       <View className="flex-1 justify-between px-4 py-4">
-        <Text className="text-base font-bold leading-5 text-white" numberOfLines={2}>
+        <Text
+          className="text-base font-bold leading-5 text-white"
+          numberOfLines={2}
+        >
           {title}
         </Text>
 
-        <View accessibilityLabel={getRatingLabel(normalizedRating)} accessibilityRole="text">
+        <View
+          accessibilityLabel={getRatingLabel(normalizedRating)}
+          accessibilityRole="text"
+        >
           <View className="flex-row gap-1">
             {Array.from({ length: 5 }, (_, index) => (
               <Ionicons

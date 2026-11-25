@@ -5,7 +5,7 @@ import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 
 import { APP_COLORS } from "../../constants/colors";
-import type { MovieCardData } from "../../utils/movie";
+import type { MovieCardData } from "../../utils/movies/movie";
 
 const POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
 

@@ -7,7 +7,9 @@ type FloatingBackButtonProps = {
   onPress?: () => void;
 };
 
-export default function FloatingBackButton({ onPress }: FloatingBackButtonProps) {
+export default function FloatingBackButton({
+  onPress,
+}: FloatingBackButtonProps) {
   const insets = useSafeAreaInsets();
 
   return (

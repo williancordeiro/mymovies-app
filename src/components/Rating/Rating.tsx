@@ -10,8 +10,8 @@ import {
   View,
 } from "react-native";
 
-import { getSession } from "../../session/authSession";
 import { APP_COLORS } from "../../constants/colors";
+import { getSession } from "../../session/authSession";
 
 interface RatingProps {
   movieId: number;
