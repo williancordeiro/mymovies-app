@@ -1,8 +1,9 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { DarkTheme, Stack, ThemeProvider } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { restoreSession } from "../src/session/authSession";
+import { useAuthSession } from "../src/hooks/auth";
 import { APP_COLORS } from "../src/constants/colors";
 import "../global.css";
 
@@ -25,6 +26,23 @@ const theme = {
   },
 };
 
+function SessionCacheCoordinator() {
+  const queryClient = useQueryClient();
+  const { generation } = useAuthSession();
+  const previousGeneration = useRef(generation);
+
+  useEffect(() => {
+    if (previousGeneration.current === generation) return;
+    previousGeneration.current = generation;
+    const isPrivateMovieData = (query: { queryKey: readonly unknown[] }) =>
+      query.queryKey[0] === "movies" || query.queryKey[0] === "favorites";
+    void queryClient.cancelQueries({ predicate: isPrivateMovieData });
+    queryClient.removeQueries({ predicate: isPrivateMovieData });
+  }, [generation, queryClient]);
+
+  return null;
+}
+
 export default function RootLayout() {
   const [isSessionRestored, setIsSessionRestored] = useState(false);
 
@@ -46,6 +64,7 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <SessionCacheCoordinator />
       <ThemeProvider value={theme}>
         <StatusBar style="light" />
         {isSessionRestored && (

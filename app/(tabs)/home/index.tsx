@@ -2,7 +2,10 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { FlashList } from "@shopify/flash-list";
 import { useCallback } from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 import MovieCard from "../../../src/components/MovieCard/MovieCard";
 import { APP_COLORS } from "../../../src/constants/colors";
@@ -45,7 +48,6 @@ export default function HomeScreen() {
         onRefresh={refetch}
         contentContainerStyle={{
           paddingHorizontal: 18,
-          // Barra de 78 px, espaço superior de 12 px e área segura inferior.
           paddingBottom: 78 + 12 + Math.max(insets.bottom, 12) + 24,
         }}
         ListEmptyComponent={
