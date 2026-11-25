@@ -14,7 +14,9 @@ export interface AuthSession {
 
 export class SessionStorageError extends Error {
   constructor() {
-    super("Não foi possível salvar sua sessão neste dispositivo. Tente novamente.");
+    super(
+      "Não foi possível salvar sua sessão neste dispositivo. Tente novamente.",
+    );
     this.name = "SessionStorageError";
   }
 }
@@ -80,9 +82,12 @@ function getJwtExpiration(token: string): number | null {
       normalizedPayload.length + ((4 - (normalizedPayload.length % 4)) % 4),
       "=",
     );
-    const decodedPayload = JSON.parse(globalThis.atob(paddedPayload)) as { exp?: unknown };
+    const decodedPayload = JSON.parse(globalThis.atob(paddedPayload)) as {
+      exp?: unknown;
+    };
 
-    return typeof decodedPayload.exp === "number" && Number.isFinite(decodedPayload.exp)
+    return typeof decodedPayload.exp === "number" &&
+      Number.isFinite(decodedPayload.exp)
       ? decodedPayload.exp * 1_000
       : null;
   } catch {
@@ -115,7 +120,8 @@ function isStoredSession(value: unknown): value is AuthSession {
     !!session.user &&
     typeof session.user === "object" &&
     (session.expiresAt === null ||
-      (typeof session.expiresAt === "number" && Number.isFinite(session.expiresAt)))
+      (typeof session.expiresAt === "number" &&
+        Number.isFinite(session.expiresAt)))
   );
 }
 
@@ -141,7 +147,9 @@ async function removeStoredSession(): Promise<void> {
  * Stores a session in encrypted native storage. On web, the session stays only
  * in memory and is intentionally lost when the page reloads.
  */
-export async function persistSession(response: LoginResponse): Promise<AuthSession> {
+export async function persistSession(
+  response: LoginResponse,
+): Promise<AuthSession> {
   const session = toSession(response);
 
   if (isExpired(session)) {
