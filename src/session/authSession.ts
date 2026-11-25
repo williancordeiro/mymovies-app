@@ -294,7 +294,15 @@ export function getSessionToken(): string | null {
   return getSession()?.token ?? null;
 }
 
-export async function clearSession(): Promise<void> {
+/**
+ * Clears the current session, optionally only if it is still identified by the
+ * token that initiated an asynchronous operation.
+ */
+export async function clearSession(expectedToken?: string): Promise<boolean> {
+  if (expectedToken !== undefined && getSession()?.token !== expectedToken) {
+    return false;
+  }
+
   setCurrentSession(null);
 
   try {
@@ -302,4 +310,15 @@ export async function clearSession(): Promise<void> {
   } catch {
     throw new SessionStorageError();
   }
+
+  const latestSession = getSession();
+  if (latestSession) {
+    try {
+      await writeSession(latestSession);
+    } catch {
+      // The newer in-memory session remains authoritative if persistence fails.
+    }
+  }
+
+  return true;
 }

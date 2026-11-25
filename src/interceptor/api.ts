@@ -8,6 +8,8 @@ declare module "axios" {
     skipAuth?: boolean;
     /** Bearer token captured when the request starts, used to reject stale 401s. */
     authSessionToken?: string;
+    /** Preserves a current session only for the confirmed invalid-password 401. */
+    preserveSessionOnCredential401?: boolean;
   }
 }
 
@@ -36,6 +38,16 @@ function isPublicRequest(config?: AxiosRequestConfig): boolean {
   return path === "/auth/login" || path === "/auth/register";
 }
 
+function isConfirmedInvalidPasswordResponse(data: unknown): boolean {
+  if (!data || typeof data !== "object") return false;
+
+  const response = data as { error?: unknown; message?: unknown };
+  return (
+    response.error === "A senha está incorreta!" ||
+    response.message === "A senha está incorreta!"
+  );
+}
+
 api.interceptors.request.use((config) => {
   if (isPublicRequest(config)) {
     return config;
@@ -61,10 +73,16 @@ api.interceptors.response.use(
     if (
       status === 401 &&
       !isPublicRequest(config) &&
+      !(
+        config?.preserveSessionOnCredential401 &&
+        isConfirmedInvalidPasswordResponse(
+          (error as { response?: { data?: unknown } }).response?.data,
+        )
+      ) &&
       config?.authSessionToken === getSessionToken()
     ) {
       try {
-        await clearSession();
+        await clearSession(config.authSessionToken);
       } catch {
         // The in-memory session is cleared even if native cleanup fails.
       }

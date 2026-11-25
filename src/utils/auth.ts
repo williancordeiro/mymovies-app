@@ -28,6 +28,63 @@ export type RegisterResponse = AuthenticatedResponse;
 
 export type LoginResponse = AuthenticatedResponse;
 
+export interface ChangeEmailInput {
+  email: string;
+  password: string;
+}
+
+export interface DeleteAccountInput {
+  password: string;
+}
+
+export interface ChangePasswordInput {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface SensitiveAccountMessageResponse {
+  message: string;
+  flash?: unknown;
+}
+
+export type SensitiveAccountErrorKind =
+  | "validation"
+  | "invalidCredentials"
+  | "unauthorized"
+  | "network"
+  | "timeout"
+  | "general";
+
+export class SensitiveAccountError extends Error {
+  readonly kind: SensitiveAccountErrorKind;
+  readonly status?: number;
+  readonly fieldErrors: Record<string, string>;
+
+  constructor({
+    message,
+    kind,
+    status,
+    fieldErrors = {},
+  }: {
+    message: string;
+    kind: SensitiveAccountErrorKind;
+    status?: number;
+    fieldErrors?: Record<string, string>;
+  }) {
+    super(message);
+    this.name = "SensitiveAccountError";
+    this.kind = kind;
+    this.status = status;
+    this.fieldErrors = fieldErrors;
+  }
+}
+
+export function isSensitiveAccountError(
+  error: unknown,
+): error is SensitiveAccountError {
+  return error instanceof SensitiveAccountError;
+}
+
 export type RegisterErrorKind = "validation" | "general";
 
 export class RegisterError extends Error {
