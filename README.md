@@ -42,8 +42,9 @@ Marque cada checkpoint conforme suas entregas forem concluídas e as respectivas
 - [x] **Experiência visual e arquitetura:** criar os protótipos e definir a identidade visual, a navegação e a arquitetura.
 - [x] **Banco de dados e estrutura:** preparar a modelagem dos dados, o ambiente e a estrutura inicial do projeto.
 - [x] **Catálogo e busca de filmes:** disponibilizar catálogo, pesquisa, detalhes dos filmes e tratamento dos estados de consulta.
-- [ ] **Cadastro, login e perfil:** implementar cadastro, autenticação, sessão e gerenciamento do perfil do usuário.
-- [ ] **Avaliações e notas:** permitir criar, alterar e remover avaliações, incluindo o cálculo da média de notas dos filmes.
+- [x] **Cadastro, login e perfil:** implementar cadastro, autenticação, sessão e gerenciamento do perfil do usuário.
+- [x] **Avaliações e notas:** permitir criar e alterar avaliações de filmes.
+- [x] **Favoritos:** permitir adicionar, remover e consultar os filmes favoritos do usuário.
 - [ ] **Listas de filmes assistidos:** permitir criar e gerenciar listas pessoais, adicionando e removendo filmes.
 - [ ] **Integração e entrega final:** integrar os módulos, executar os testes, atualizar a documentação e preparar a entrega.
 
@@ -66,5 +67,21 @@ Marque cada checkpoint conforme suas entregas forem concluídas e as respectivas
   - Tratamento dos estados de carregamento, erro e resultados vazios.
   - Acesso aos detalhes pelos resultados da busca.
   - Ajustes na navegação inferior, no retorno entre telas e nos espaçamentos.
+
+- **Autenticação de usuário — [PR #18](https://github.com/williancordeiro/mymovies-app/pull/18), incorporado em 11/11/2026**
+  - Implementação das telas de cadastro e login, com validação de campos e mensagens de erro.
+  - Criação e restauração segura da sessão do usuário, incluindo encerramento de sessão.
+
+- **Perfil de usuário — [PR #20](https://github.com/williancordeiro/mymovies-app/pull/20), incorporado em 12/11/2026**
+  - Inclusão da tela de perfil com carregamento dos dados do usuário.
+  - Adição de configurações para edição do perfil e saída da conta.
+
+- **Avaliação de filmes — [PR #22](https://github.com/williancordeiro/mymovies-app/pull/22), incorporado em 24/11/2026**
+  - Implementação do envio e da atualização da avaliação do usuário, com notas de 1 a 5 estrelas.
+  - Tratamento dos estados de envio, erros e acesso à autenticação para avaliar filmes.
+
+- **Favoritos — [PR #24](https://github.com/williancordeiro/mymovies-app/pull/24), incorporado em 25/11/2026**
+  - Implementação da adição e remoção de filmes favoritos nas telas de catálogo, busca e detalhes.
+  - Criação da tela de favoritos com paginação, atualização por gesto e estados de carregamento, erro e lista vazia.
 
 O período de **23/11 a 30/11** será reservado para ajustes decorrentes da avaliação final, correções emergenciais e consolidação da documentação do projeto.
