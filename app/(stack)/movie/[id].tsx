@@ -1,7 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Image } from "expo-image";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import {
   ActivityIndicator,
   Pressable,
@@ -13,8 +13,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import Rating from "../../../src/components/Rating/Rating";
 import { APP_COLORS } from "../../../src/constants/colors";
-import { useMovie, useRateMovie } from "../../../src/hooks/movie";
-import type { MovieDetails } from "../../../src/utils/movieDetails";
+import { useAuthSession } from "../../../src/hooks/auth";
+import {
+  useMovie,
+  useRateMovie,
+  useSetMovieFavorite,
+} from "../../../src/hooks/movie";
+import type { MovieDetails } from "../../../src/utils/movies/movieDetails";
 
 const IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
 
@@ -51,8 +56,16 @@ function DetailItem({ label, value }: { label: string; value: string }) {
   );
 }
 
-function MovieContent({ movie, movieId }: { movie: MovieDetails; movieId: number }) {
+function MovieContent({
+  movie,
+  movieId,
+}: {
+  movie: MovieDetails;
+  movieId: number;
+}) {
   const rateMovie = useRateMovie();
+  const setFavorite = useSetMovieFavorite();
+  const { session } = useAuthSession();
   const backdropUrl = getImageUrl(movie.backdrop_path, "w1280");
   const posterUrl = getImageUrl(movie.poster_path, "w500");
   const myMoviesRating = Number.isFinite(movie.mymovies_rating_average)
@@ -70,6 +83,21 @@ function MovieContent({ movie, movieId }: { movie: MovieDetails; movieId: number
   const companies = movie.production_companies
     .map((item) => item.name)
     .join(", ");
+  const isFavorite = movie.user_favorited;
+  const favoriteLabel = isFavorite
+    ? "Remover dos favoritos"
+    : "Adicionar aos favoritos";
+
+  const toggleFavorite = () => {
+    if (setFavorite.isPending || !Number.isInteger(movieId) || movieId <= 0)
+      return;
+    if (!session) {
+      router.push("/auth/login");
+      return;
+    }
+    setFavorite.reset();
+    setFavorite.mutate({ movieId, favorited: !isFavorite });
+  };
 
   return (
     <ScrollView
@@ -129,9 +157,39 @@ function MovieContent({ movie, movieId }: { movie: MovieDetails; movieId: number
           </View>
         </View>
 
-        <Text className="mt-6 text-2xl font-bold leading-9 text-white">
-          {movie.title}
-        </Text>
+        <View className="mt-6 flex-row items-start justify-between gap-4">
+          <Text className="flex-1 text-2xl font-bold leading-9 text-white">
+            {movie.title}
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              setFavorite.isPending ? "Atualizando favoritos" : favoriteLabel
+            }
+            accessibilityState={{
+              selected: isFavorite,
+              disabled: setFavorite.isPending,
+              busy: setFavorite.isPending,
+            }}
+            disabled={setFavorite.isPending}
+            onPress={toggleFavorite}
+            hitSlop={8}
+            className="h-11 w-11 items-center justify-center rounded-full bg-[#262626]"
+            style={({ pressed }) => ({
+              opacity: setFavorite.isPending ? 0.5 : pressed ? 0.72 : 1,
+            })}
+          >
+            {setFavorite.isPending ? (
+              <ActivityIndicator size="small" color={APP_COLORS.primary} />
+            ) : (
+              <Ionicons
+                name={isFavorite ? "heart" : "heart-outline"}
+                size={29}
+                color={isFavorite ? "rgb(250, 82, 82)" : "#ffffff"}
+              />
+            )}
+          </Pressable>
+        </View>
         {movie.original_title !== movie.title ? (
           <Text className="mt-1 text-sm text-[#8e8e93]">
             {movie.original_title}
@@ -140,6 +198,15 @@ function MovieContent({ movie, movieId }: { movie: MovieDetails; movieId: number
         {metadata ? (
           <Text className="mt-3 text-sm font-medium text-[#b8b8b8]">
             {metadata}
+          </Text>
+        ) : null}
+
+        {setFavorite.error ? (
+          <Text
+            accessibilityLiveRegion="assertive"
+            className="mt-3 text-sm leading-5 text-[#ff8a80]"
+          >
+            {setFavorite.error.message}
           </Text>
         ) : null}
 

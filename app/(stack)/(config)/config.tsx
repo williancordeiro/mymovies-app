@@ -35,9 +35,7 @@ export default function ConfigScreen() {
 
       Alert.alert(
         "Não foi possível sair",
-        error instanceof Error
-          ? error.message
-          : "Tente novamente.",
+        error instanceof Error ? error.message : "Tente novamente.",
       );
     } finally {
       setIsLoggingOut(false);

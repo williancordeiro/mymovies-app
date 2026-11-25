@@ -1,8 +1,8 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
-import { Controller, type Control, useForm } from "react-hook-form";
 import { useState } from "react";
+import { Controller, useForm, type Control } from "react-hook-form";
 import {
   ActivityIndicator,
   Alert,
@@ -14,12 +14,15 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { z } from "zod";
 
+import { APP_COLORS } from "../../../src/constants/colors";
 import { useLogin } from "../../../src/hooks/auth";
 import { isLoginError } from "../../../src/utils/auth";
-import { APP_COLORS } from "../../../src/constants/colors";
 
 const loginSchema = z.object({
   email: z
@@ -52,7 +55,10 @@ export default function LoginScreen() {
     setGeneralError(null);
 
     try {
-      await mutateAsync({ email: values.email.trim(), password: values.password });
+      await mutateAsync({
+        email: values.email.trim(),
+        password: values.password,
+      });
       router.replace("/home");
     } catch (error) {
       setGeneralError(
@@ -143,9 +149,13 @@ export default function LoginScreen() {
                   "A recuperação de senha ainda não está disponível.",
                 );
               }}
-              style={({ pressed }) => ({ opacity: isPending ? 0.45 : pressed ? 0.7 : 1 })}
+              style={({ pressed }) => ({
+                opacity: isPending ? 0.45 : pressed ? 0.7 : 1,
+              })}
             >
-              <Text className="text-sm font-semibold text-primary">Esqueci minha senha</Text>
+              <Text className="text-sm font-semibold text-primary">
+                Esqueci minha senha
+              </Text>
             </Pressable>
 
             {generalError && (
@@ -153,7 +163,9 @@ export default function LoginScreen() {
                 accessibilityLiveRegion="polite"
                 className="mt-3 rounded-xl border border-red-500/60 bg-red-950/50 px-4 py-3"
               >
-                <Text className="text-sm leading-5 text-red-200">{generalError}</Text>
+                <Text className="text-sm leading-5 text-red-200">
+                  {generalError}
+                </Text>
               </View>
             )}
 
@@ -166,7 +178,9 @@ export default function LoginScreen() {
               onPress={() => {
                 void submit();
               }}
-              style={({ pressed }) => ({ opacity: isPending ? 0.6 : pressed ? 0.75 : 1 })}
+              style={({ pressed }) => ({
+                opacity: isPending ? 0.6 : pressed ? 0.75 : 1,
+              })}
             >
               {isPending ? (
                 <View className="flex-row items-center gap-3">
@@ -179,15 +193,21 @@ export default function LoginScreen() {
             </Pressable>
 
             <View className="mb-[74px] mt-6 flex-row items-center justify-center">
-              <Text className="text-base text-[#8A8A8F]">Ainda não tem uma conta? </Text>
+              <Text className="text-base text-[#8A8A8F]">
+                Ainda não tem uma conta?{" "}
+              </Text>
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Criar nova conta"
                 disabled={isPending}
                 onPress={() => router.push("/auth/register")}
-                style={({ pressed }) => ({ opacity: isPending ? 0.45 : pressed ? 0.7 : 1 })}
+                style={({ pressed }) => ({
+                  opacity: isPending ? 0.45 : pressed ? 0.7 : 1,
+                })}
               >
-                <Text className="text-base font-bold text-primary">Nova Conta</Text>
+                <Text className="text-base font-bold text-primary">
+                  Nova Conta
+                </Text>
               </Pressable>
             </View>
           </View>
@@ -234,7 +254,12 @@ function FormField({
             className="min-h-[58px] flex-row items-center rounded-[14px] border-2 bg-[#292929] px-5"
             style={{ borderColor: error ? "#ef4444" : APP_COLORS.primary }}
           >
-            <Ionicons accessible={false} color={APP_COLORS.primary} name={icon} size={23} />
+            <Ionicons
+              accessible={false}
+              color={APP_COLORS.primary}
+              name={icon}
+              size={23}
+            />
             <TextInput
               {...inputProps}
               accessibilityHint={error}
@@ -254,7 +279,10 @@ function FormField({
         )}
       />
       {error && (
-        <Text accessibilityLiveRegion="polite" className="mt-2 text-sm text-red-300">
+        <Text
+          accessibilityLiveRegion="polite"
+          className="mt-2 text-sm text-red-300"
+        >
           {error}
         </Text>
       )}

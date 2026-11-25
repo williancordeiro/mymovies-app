@@ -21,7 +21,7 @@ import FloatingBackButton from "../../../src/components/FloatingBackButton/Float
 import SearchResultCard from "../../../src/components/SearchResultCard/SearchResultCard";
 import { APP_COLORS } from "../../../src/constants/colors";
 import { useMovieSearch } from "../../../src/hooks/movie";
-import type { Movie } from "../../../src/utils/movie";
+import type { Movie } from "../../../src/utils/movies/movie";
 
 export default function SearchScreen() {
   const insets = useSafeAreaInsets();
@@ -113,7 +113,10 @@ export default function SearchScreen() {
                 >
                   {loading ? (
                     <>
-                      <ActivityIndicator size="large" color={APP_COLORS.primary} />
+                      <ActivityIndicator
+                        size="large"
+                        color={APP_COLORS.primary}
+                      />
                       <Text className="mt-4 text-base text-[#a3a3a3]">
                         Buscando filmes...
                       </Text>

@@ -5,7 +5,7 @@ import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 
 import { APP_COLORS } from "../../constants/colors";
-import type { Movie } from "../../utils/movie";
+import type { Movie } from "../../utils/movies/movie";
 
 interface SearchResultCardProps {
   movie: Movie;
@@ -27,10 +27,12 @@ function SearchResultCard({ movie }: SearchResultCardProps) {
       accessibilityRole="button"
       accessibilityLabel={`Abrir ${movie.title}, ${year}, avaliação ${rating}`}
       className="flex-row items-center overflow-hidden rounded-2xl bg-[#1c1c1e]"
-      onPress={() => router.push({
-        pathname: "/movie/[id]",
-        params: { id: String(movie.id) },
-      })}
+      onPress={() =>
+        router.push({
+          pathname: "/movie/[id]",
+          params: { id: String(movie.id) },
+        })
+      }
       style={({ pressed }) => ({ opacity: pressed ? 0.78 : 1 })}
     >
       <View
@@ -48,7 +50,12 @@ function SearchResultCard({ movie }: SearchResultCardProps) {
           />
         ) : (
           <>
-            <Ionicons name="film-outline" size={32} color="#737373" accessible={false} />
+            <Ionicons
+              name="film-outline"
+              size={32}
+              color="#737373"
+              accessible={false}
+            />
             <Text className="mt-2 px-2 text-center text-xs text-[#8e8e93]">
               Pôster indisponível
             </Text>
@@ -56,13 +63,21 @@ function SearchResultCard({ movie }: SearchResultCardProps) {
         )}
       </View>
       <View className="min-w-0 flex-1 px-4 py-4">
-        <Text className="text-base font-semibold leading-6 text-white" numberOfLines={3}>
+        <Text
+          className="text-base font-semibold leading-6 text-white"
+          numberOfLines={3}
+        >
           {movie.title}
         </Text>
         <View className="mt-3 flex-row items-center justify-between gap-3">
           <Text className="min-w-0 flex-1 text-sm text-[#a3a3a3]">{year}</Text>
           <View className="shrink-0 flex-row items-center gap-1">
-            <Ionicons name="star" size={15} color={APP_COLORS.ratingStar} accessible={false} />
+            <Ionicons
+              name="star"
+              size={15}
+              color={APP_COLORS.ratingStar}
+              accessible={false}
+            />
             <Text className="text-sm font-semibold text-white">{rating}</Text>
           </View>
         </View>

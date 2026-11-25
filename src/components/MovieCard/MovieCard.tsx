@@ -5,12 +5,13 @@ import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 
 import { APP_COLORS } from "../../constants/colors";
-import type { Movie } from "../../utils/movie";
+import type { MovieCardData } from "../../utils/movies/movie";
 
 const POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
 
 interface MovieCardProps {
-  movie: Movie;
+  movie: MovieCardData;
+  badgeVariant?: "rating" | "favorite";
 }
 
 function getPosterUrl(posterPath: string | null) {
@@ -22,19 +23,23 @@ function getPosterUrl(posterPath: string | null) {
   return `${POSTER_BASE_URL}/${posterPath.replace(/^\/+/, "")}`;
 }
 
-function MovieCard({ movie }: MovieCardProps) {
+function MovieCard({ movie, badgeVariant = "rating" }: MovieCardProps) {
   const posterUrl = getPosterUrl(movie.poster_path);
   const releaseYear = movie.release_date
     ? new Date(`${movie.release_date}T00:00:00`).getFullYear()
     : null;
-  const rating = Number.isFinite(movie.mymovies_rating_average)
-    ? movie.mymovies_rating_average.toFixed(1)
-    : "—";
+  const ratingValue = movie.mymovies_rating_average;
+  const hasRating =
+    typeof ratingValue === "number" && Number.isFinite(ratingValue);
+  const rating =
+    typeof ratingValue === "number" && Number.isFinite(ratingValue)
+      ? ratingValue.toFixed(1)
+      : "—";
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Abrir ${movie.title}, ${releaseYear ?? "ano não informado"}, avaliação ${rating}`}
+      accessibilityLabel={`Abrir ${movie.title}, ${releaseYear ?? "ano não informado"}, ${badgeVariant === "favorite" ? "favorito" : hasRating ? `avaliação ${rating}` : "avaliação indisponível"}`}
       className="overflow-hidden rounded-2xl bg-[#1c1c1e]"
       onPress={() =>
         router.push({
@@ -68,16 +73,40 @@ function MovieCard({ movie }: MovieCardProps) {
           </View>
         )}
 
-        <View className="absolute right-2 top-2 flex-row items-center gap-1 rounded-full bg-black/80 px-2 py-1">
-          <Ionicons name="star" size={13} color={APP_COLORS.ratingStar} accessible={false} />
-          <Text className="text-xs font-bold text-white">{rating}</Text>
-        </View>
+        {badgeVariant === "favorite" ? (
+          <View
+            accessible
+            accessibilityLabel="Favorito"
+            className="absolute right-2 top-2 h-8 w-8 items-center justify-center rounded-full"
+            style={{ backgroundColor: "rgba(0, 0, 0, 0.8)" }}
+          >
+            <Ionicons
+              name="heart"
+              size={17}
+              color="rgba(250, 82, 82, 0.9)"
+              accessible={false}
+            />
+          </View>
+        ) : (
+          <View
+            accessible
+            accessibilityLabel={
+              hasRating ? `Avaliação ${rating}` : "Avaliação indisponível"
+            }
+            className="absolute right-2 top-2 flex-row items-center gap-1 rounded-full bg-black/80 px-2 py-1"
+          >
+            <Ionicons
+              name="star"
+              size={13}
+              color={APP_COLORS.ratingStar}
+              accessible={false}
+            />
+            <Text className="text-xs font-bold text-white">{rating}</Text>
+          </View>
+        )}
       </View>
 
-      <View
-        className="justify-between px-3 py-3"
-        style={{ height: 88 }}
-      >
+      <View className="justify-between px-3 py-3" style={{ height: 88 }}>
         <Text className="font-semibold leading-5 text-white" numberOfLines={2}>
           {movie.title}
         </Text>

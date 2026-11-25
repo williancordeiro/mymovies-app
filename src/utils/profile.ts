@@ -20,13 +20,26 @@ export interface ProfileMovieRating extends UserRating {
   posterPath: string | null;
 }
 
-export type ProfileErrorKind = "unauthorized" | "notFound" | "network" | "timeout" | "general";
+export type ProfileErrorKind =
+  | "unauthorized"
+  | "notFound"
+  | "network"
+  | "timeout"
+  | "general";
 
 export class ProfileError extends Error {
   readonly kind: ProfileErrorKind;
   readonly status?: number;
 
-  constructor({ message, kind, status }: { message: string; kind: ProfileErrorKind; status?: number }) {
+  constructor({
+    message,
+    kind,
+    status,
+  }: {
+    message: string;
+    kind: ProfileErrorKind;
+    status?: number;
+  }) {
     super(message);
     this.name = "ProfileError";
     this.kind = kind;
@@ -38,7 +51,10 @@ export function isProfileError(error: unknown): error is ProfileError {
   return error instanceof ProfileError;
 }
 
-export function toProfileError(error: unknown, resource: "perfil" | "avaliações"): ProfileError {
+export function toProfileError(
+  error: unknown,
+  resource: "perfil" | "avaliações",
+): ProfileError {
   if (isProfileError(error)) {
     return error;
   }
@@ -64,14 +80,16 @@ export function toProfileError(error: unknown, resource: "perfil" | "avaliaçõe
 
     if (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT") {
       return new ProfileError({
-        message: "A solicitação demorou mais do que o esperado. Tente novamente.",
+        message:
+          "A solicitação demorou mais do que o esperado. Tente novamente.",
         kind: "timeout",
       });
     }
 
     if (!error.response) {
       return new ProfileError({
-        message: "Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.",
+        message:
+          "Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.",
         kind: "network",
       });
     }

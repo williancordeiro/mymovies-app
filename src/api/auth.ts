@@ -1,6 +1,7 @@
 import { isAxiosError } from "axios";
 
 import { api } from "../interceptor/api";
+import { SessionStorageError, persistSession } from "../session/authSession";
 import {
   LoginError,
   type LoginInput,
@@ -9,7 +10,6 @@ import {
   type RegisterInput,
   type RegisterResponse,
 } from "../utils/auth";
-import { SessionStorageError, persistSession } from "../session/authSession";
 
 type RegisterErrorResponse = {
   message?: unknown;
@@ -71,7 +71,8 @@ function toRegisterError(error: unknown): RegisterError {
   }
 
   return new RegisterError({
-    message: "Ocorreu um erro inesperado ao realizar o cadastro. Tente novamente.",
+    message:
+      "Ocorreu um erro inesperado ao realizar o cadastro. Tente novamente.",
     kind: "general",
   });
 }
@@ -87,11 +88,21 @@ function toLoginError(error: unknown): LoginError {
     const fallback = status
       ? "Não foi possível entrar. Tente novamente."
       : "Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.";
-    const message = getMessage(data?.message, getMessage(data?.error, fallback));
+    const message = getMessage(
+      data?.message,
+      getMessage(data?.error, fallback),
+    );
 
     return new LoginError({
       message,
-      kind: status === 401 ? "credentials" : status === 400 ? "validation" : status ? "general" : "network",
+      kind:
+        status === 401
+          ? "credentials"
+          : status === 400
+            ? "validation"
+            : status
+              ? "general"
+              : "network",
       status,
     });
   }
@@ -102,7 +113,9 @@ function toLoginError(error: unknown): LoginError {
   });
 }
 
-export async function register(input: RegisterInput): Promise<RegisterResponse> {
+export async function register(
+  input: RegisterInput,
+): Promise<RegisterResponse> {
   try {
     const { data } = await api.post<RegisterResponse>("/auth/register", input);
     return data;

@@ -52,7 +52,8 @@ api.interceptors.response.use(
   (response) => response,
   async (error: unknown) => {
     const config = (error as { config?: AxiosRequestConfig }).config;
-    const status = (error as { response?: { status?: number } }).response?.status;
+    const status = (error as { response?: { status?: number } }).response
+      ?.status;
 
     if (status === 401 && !isPublicRequest(config)) {
       try {
