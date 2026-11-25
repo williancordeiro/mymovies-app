@@ -1,5 +1,7 @@
 import { isAxiosError } from "axios";
 
+import type { AuthenticatedUser } from "./auth";
+
 export interface Profile {
   id: number;
   username: string;
@@ -8,6 +10,64 @@ export interface Profile {
   role: string;
   avatarFile: string | null;
   bannerFile: string | null;
+}
+
+export interface UpdateProfileInput {
+  username?: string;
+  handle?: string;
+}
+
+export interface AvatarUploadInput {
+  uri: string;
+  name: string;
+  mimeType: "image/jpeg" | "image/png";
+  size?: number;
+  width?: number;
+  height?: number;
+}
+
+export interface UpdatedProfileResponse {
+  token: string;
+  user: AuthenticatedUser;
+}
+
+export type UpdateProfileErrorKind =
+  | "validation"
+  | "unchanged"
+  | "invalidFile"
+  | "unauthorized"
+  | "network"
+  | "timeout"
+  | "general";
+
+export class UpdateProfileError extends Error {
+  readonly kind: UpdateProfileErrorKind;
+  readonly status?: number;
+  readonly fieldErrors: Record<string, string>;
+
+  constructor({
+    message,
+    kind,
+    status,
+    fieldErrors = {},
+  }: {
+    message: string;
+    kind: UpdateProfileErrorKind;
+    status?: number;
+    fieldErrors?: Record<string, string>;
+  }) {
+    super(message);
+    this.name = "UpdateProfileError";
+    this.kind = kind;
+    this.status = status;
+    this.fieldErrors = fieldErrors;
+  }
+}
+
+export function isUpdateProfileError(
+  error: unknown,
+): error is UpdateProfileError {
+  return error instanceof UpdateProfileError;
 }
 
 export interface UserRating {

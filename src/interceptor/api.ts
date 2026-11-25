@@ -6,6 +6,8 @@ declare module "axios" {
   export interface AxiosRequestConfig {
     /** Skips the bearer token and prevents a 401 from clearing the current session. */
     skipAuth?: boolean;
+    /** Bearer token captured when the request starts, used to reject stale 401s. */
+    authSessionToken?: string;
   }
 }
 
@@ -43,6 +45,7 @@ api.interceptors.request.use((config) => {
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+    config.authSessionToken = token;
   }
 
   return config;
@@ -55,7 +58,11 @@ api.interceptors.response.use(
     const status = (error as { response?: { status?: number } }).response
       ?.status;
 
-    if (status === 401 && !isPublicRequest(config)) {
+    if (
+      status === 401 &&
+      !isPublicRequest(config) &&
+      config?.authSessionToken === getSessionToken()
+    ) {
       try {
         await clearSession();
       } catch {

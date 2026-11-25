@@ -19,15 +19,14 @@ export interface AuthenticatedUser {
   banner_file: string;
 }
 
-export interface RegisterResponse {
+export interface AuthenticatedResponse {
   token: string;
   user: AuthenticatedUser;
 }
 
-export interface LoginResponse {
-  token: string;
-  user: AuthenticatedUser;
-}
+export type RegisterResponse = AuthenticatedResponse;
+
+export type LoginResponse = AuthenticatedResponse;
 
 export type RegisterErrorKind = "validation" | "general";
 
