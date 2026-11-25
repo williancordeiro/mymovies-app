@@ -1,8 +1,8 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
-import { Controller, type Control, useForm } from "react-hook-form";
 import { useState } from "react";
+import { Controller, useForm, type Control } from "react-hook-form";
 import {
   ActivityIndicator,
   Alert,
@@ -14,26 +14,31 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { z } from "zod";
 
-import { useRegister } from "../../../src/hooks/auth";
 import { APP_COLORS } from "../../../src/constants/colors";
+import { useRegister } from "../../../src/hooks/auth";
 import { isRegisterError } from "../../../src/utils/auth";
 
-const registerSchema = z.object({
-  username: z.string().trim().min(1, "Informe seu nome de usuário."),
-  email: z
-    .string()
-    .trim()
-    .min(1, "Informe seu e-mail.")
-    .email("Informe um e-mail válido."),
-  password: z.string().min(1, "Informe sua senha."),
-  passwordConfirmation: z.string().min(1, "Confirme sua senha."),
-}).refine((values) => values.password === values.passwordConfirmation, {
-  message: "As senhas precisam ser iguais.",
-  path: ["passwordConfirmation"],
-});
+const registerSchema = z
+  .object({
+    username: z.string().trim().min(1, "Informe seu nome de usuário."),
+    email: z
+      .string()
+      .trim()
+      .min(1, "Informe seu e-mail.")
+      .email("Informe um e-mail válido."),
+    password: z.string().min(1, "Informe sua senha."),
+    passwordConfirmation: z.string().min(1, "Confirme sua senha."),
+  })
+  .refine((values) => values.password === values.passwordConfirmation, {
+    message: "As senhas precisam ser iguais.",
+    path: ["passwordConfirmation"],
+  });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
@@ -83,7 +88,9 @@ export default function RegisterScreen() {
       );
     } catch (error) {
       if (!isRegisterError(error)) {
-        setGeneralError("Não foi possível concluir o cadastro. Tente novamente.");
+        setGeneralError(
+          "Não foi possível concluir o cadastro. Tente novamente.",
+        );
         return;
       }
 
@@ -91,7 +98,10 @@ export default function RegisterScreen() {
 
       for (const [field, message] of Object.entries(error.fieldErrors)) {
         if (knownFields.has(field as keyof RegisterFormValues)) {
-          setError(field as keyof RegisterFormValues, { type: "server", message });
+          setError(field as keyof RegisterFormValues, {
+            type: "server",
+            message,
+          });
         } else {
           unmappedErrors.push(message);
         }
@@ -215,7 +225,9 @@ export default function RegisterScreen() {
                 accessibilityLiveRegion="polite"
                 className="mt-5 rounded-xl border border-red-500/60 bg-red-950/50 px-4 py-3"
               >
-                <Text className="text-sm leading-5 text-red-200">{generalError}</Text>
+                <Text className="text-sm leading-5 text-red-200">
+                  {generalError}
+                </Text>
               </View>
             )}
 
@@ -228,15 +240,21 @@ export default function RegisterScreen() {
               onPress={() => {
                 void submit();
               }}
-              style={({ pressed }) => ({ opacity: isPending ? 0.6 : pressed ? 0.75 : 1 })}
+              style={({ pressed }) => ({
+                opacity: isPending ? 0.6 : pressed ? 0.75 : 1,
+              })}
             >
               {isPending ? (
                 <View className="flex-row items-center gap-3">
                   <ActivityIndicator color="#FFFFFF" />
-                  <Text className="font-semibold text-white">Criando conta...</Text>
+                  <Text className="font-semibold text-white">
+                    Criando conta...
+                  </Text>
                 </View>
               ) : (
-                <Text className="text-xl font-bold text-white">Criar Conta</Text>
+                <Text className="text-xl font-bold text-white">
+                  Criar Conta
+                </Text>
               )}
             </Pressable>
           </View>
@@ -311,7 +329,10 @@ function FormField({
         )}
       />
       {error && (
-        <Text accessibilityLiveRegion="polite" className="mt-2 text-sm text-red-300">
+        <Text
+          accessibilityLiveRegion="polite"
+          className="mt-2 text-sm text-red-300"
+        >
           {error}
         </Text>
       )}

@@ -1,11 +1,15 @@
-import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { DarkTheme, Stack, ThemeProvider } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef, useState } from "react";
-import { restoreSession } from "../src/session/authSession";
-import { useAuthSession } from "../src/hooks/auth";
-import { APP_COLORS } from "../src/constants/colors";
 import "../global.css";
+import { APP_COLORS } from "../src/constants/colors";
+import { useAuthSession } from "../src/hooks/auth";
+import { restoreSession } from "../src/session/authSession";
 
 const queryClient = new QueryClient({
   defaultOptions: {

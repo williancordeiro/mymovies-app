@@ -14,7 +14,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Rating from "../../../src/components/Rating/Rating";
 import { APP_COLORS } from "../../../src/constants/colors";
 import { useAuthSession } from "../../../src/hooks/auth";
-import { useMovie, useRateMovie, useSetMovieFavorite } from "../../../src/hooks/movie";
+import {
+  useMovie,
+  useRateMovie,
+  useSetMovieFavorite,
+} from "../../../src/hooks/movie";
 import type { MovieDetails } from "../../../src/utils/movieDetails";
 
 const IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
@@ -52,7 +56,13 @@ function DetailItem({ label, value }: { label: string; value: string }) {
   );
 }
 
-function MovieContent({ movie, movieId }: { movie: MovieDetails; movieId: number }) {
+function MovieContent({
+  movie,
+  movieId,
+}: {
+  movie: MovieDetails;
+  movieId: number;
+}) {
   const rateMovie = useRateMovie();
   const setFavorite = useSetMovieFavorite();
   const { session } = useAuthSession();
@@ -74,10 +84,13 @@ function MovieContent({ movie, movieId }: { movie: MovieDetails; movieId: number
     .map((item) => item.name)
     .join(", ");
   const isFavorite = movie.user_favorited;
-  const favoriteLabel = isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos";
+  const favoriteLabel = isFavorite
+    ? "Remover dos favoritos"
+    : "Adicionar aos favoritos";
 
   const toggleFavorite = () => {
-    if (setFavorite.isPending || !Number.isInteger(movieId) || movieId <= 0) return;
+    if (setFavorite.isPending || !Number.isInteger(movieId) || movieId <= 0)
+      return;
     if (!session) {
       router.push("/auth/login");
       return;
@@ -150,18 +163,30 @@ function MovieContent({ movie, movieId }: { movie: MovieDetails; movieId: number
           </Text>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={setFavorite.isPending ? "Atualizando favoritos" : favoriteLabel}
-            accessibilityState={{ selected: isFavorite, disabled: setFavorite.isPending, busy: setFavorite.isPending }}
+            accessibilityLabel={
+              setFavorite.isPending ? "Atualizando favoritos" : favoriteLabel
+            }
+            accessibilityState={{
+              selected: isFavorite,
+              disabled: setFavorite.isPending,
+              busy: setFavorite.isPending,
+            }}
             disabled={setFavorite.isPending}
             onPress={toggleFavorite}
             hitSlop={8}
             className="h-11 w-11 items-center justify-center rounded-full bg-[#262626]"
-            style={({ pressed }) => ({ opacity: setFavorite.isPending ? 0.5 : pressed ? 0.72 : 1 })}
+            style={({ pressed }) => ({
+              opacity: setFavorite.isPending ? 0.5 : pressed ? 0.72 : 1,
+            })}
           >
             {setFavorite.isPending ? (
               <ActivityIndicator size="small" color={APP_COLORS.primary} />
             ) : (
-              <Ionicons name={isFavorite ? "heart" : "heart-outline"} size={29} color={isFavorite ? "rgb(250, 82, 82)" : "#ffffff"} />
+              <Ionicons
+                name={isFavorite ? "heart" : "heart-outline"}
+                size={29}
+                color={isFavorite ? "rgb(250, 82, 82)" : "#ffffff"}
+              />
             )}
           </Pressable>
         </View>
@@ -177,7 +202,10 @@ function MovieContent({ movie, movieId }: { movie: MovieDetails; movieId: number
         ) : null}
 
         {setFavorite.error ? (
-          <Text accessibilityLiveRegion="assertive" className="mt-3 text-sm leading-5 text-[#ff8a80]">
+          <Text
+            accessibilityLiveRegion="assertive"
+            className="mt-3 text-sm leading-5 text-[#ff8a80]"
+          >
             {setFavorite.error.message}
           </Text>
         ) : null}

@@ -113,7 +113,10 @@ export default function SearchScreen() {
                 >
                   {loading ? (
                     <>
-                      <ActivityIndicator size="large" color={APP_COLORS.primary} />
+                      <ActivityIndicator
+                        size="large"
+                        color={APP_COLORS.primary}
+                      />
                       <Text className="mt-4 text-base text-[#a3a3a3]">
                         Buscando filmes...
                       </Text>
