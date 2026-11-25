@@ -19,7 +19,7 @@ import {
   useRateMovie,
   useSetMovieFavorite,
 } from "../../../src/hooks/movie";
-import type { MovieDetails } from "../../../src/utils/movieDetails";
+import type { MovieDetails } from "../../../src/utils/movies/movieDetails";
 
 const IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
 

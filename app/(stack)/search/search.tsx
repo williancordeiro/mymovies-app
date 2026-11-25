@@ -21,7 +21,7 @@ import FloatingBackButton from "../../../src/components/FloatingBackButton/Float
 import SearchResultCard from "../../../src/components/SearchResultCard/SearchResultCard";
 import { APP_COLORS } from "../../../src/constants/colors";
 import { useMovieSearch } from "../../../src/hooks/movie";
-import type { Movie } from "../../../src/utils/movie";
+import type { Movie } from "../../../src/utils/movies/movie";
 
 export default function SearchScreen() {
   const insets = useSafeAreaInsets();
