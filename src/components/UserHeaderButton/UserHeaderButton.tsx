@@ -1,10 +1,13 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { Pressable } from "react-native";
 
-import { getSession } from "../../session/authSession";
+import {
+  getAuthSessionSnapshot,
+  subscribeToAuthSession,
+} from "../../session/authSession";
 
 type UserHeaderButtonProps = {
   disabled?: boolean;
@@ -30,7 +33,12 @@ export default function UserHeaderButton({
   onPress,
 }: UserHeaderButtonProps) {
   const isDisabled = disabled;
-  const avatarUri = resolveAvatarUri(getSession()?.user.avatar_file);
+  const session = useSyncExternalStore(
+    subscribeToAuthSession,
+    getAuthSessionSnapshot,
+    getAuthSessionSnapshot,
+  ).session;
+  const avatarUri = resolveAvatarUri(session?.user.avatar_file);
   const [failedAvatarUri, setFailedAvatarUri] = useState<string | null>(null);
   const canShowAvatar = avatarUri !== null && failedAvatarUri !== avatarUri;
 
@@ -43,7 +51,7 @@ export default function UserHeaderButton({
       disabled={isDisabled}
       onPress={
         onPress ??
-        (() => router.push(getSession() ? "/profile" : "/auth/login"))
+        (() => router.push(session ? "/profile" : "/auth/login"))
       }
       style={({ pressed }) => ({
         opacity: isDisabled ? 0.45 : pressed ? 0.65 : 1,
