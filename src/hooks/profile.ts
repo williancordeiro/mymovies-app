@@ -20,7 +20,8 @@ export function useProfile() {
     queryKey,
     enabled: Boolean(token),
     staleTime: 0,
-    retry: (failureCount, error) => error.kind !== "unauthorized" && failureCount < 2,
+    retry: (failureCount, error) =>
+      error.kind !== "unauthorized" && failureCount < 2,
     queryFn: async () => {
       try {
         const profile = await getMyProfile();
@@ -34,12 +35,13 @@ export function useProfile() {
 
         return profile;
       } catch (error) {
-        const profileError = error instanceof ProfileError
-          ? error
-          : new ProfileError({
-              message: "Não foi possível carregar perfil. Tente novamente.",
-              kind: "general",
-            });
+        const profileError =
+          error instanceof ProfileError
+            ? error
+            : new ProfileError({
+                message: "Não foi possível carregar perfil. Tente novamente.",
+                kind: "general",
+              });
 
         if (profileError.kind === "unauthorized") {
           queryClient.removeQueries({ queryKey, exact: true });

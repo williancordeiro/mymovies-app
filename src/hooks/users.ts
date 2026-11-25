@@ -2,14 +2,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { getMovieById } from "../api/movie";
 import { getUserRatings } from "../api/users";
-import { useAuthSession } from "./auth";
-import { getMovieSessionScope, movieKeys } from "./movie";
 import {
   toProfileError,
   type ProfileError,
   type ProfileMovieRating,
   type UserRating,
 } from "../utils/profile";
+import { useAuthSession } from "./auth";
+import { getMovieSessionScope, movieKeys } from "./movie";
 
 export const userKeys = {
   all: ["users"] as const,
@@ -31,7 +31,9 @@ async function mapWithConcurrency<T, R>(
     }
   }
 
-  await Promise.all(Array.from({ length: Math.min(limit, values.length) }, worker));
+  await Promise.all(
+    Array.from({ length: Math.min(limit, values.length) }, worker),
+  );
   return results;
 }
 
@@ -45,7 +47,9 @@ export function useUserRatings(handle: string | undefined) {
     queryKey: userKeys.ratings(normalizedHandle),
     enabled: isRestored && normalizedHandle.length > 0,
     retry: (failureCount, error) =>
-      error.kind !== "unauthorized" && error.kind !== "notFound" && failureCount < 2,
+      error.kind !== "unauthorized" &&
+      error.kind !== "notFound" &&
+      failureCount < 2,
     queryFn: async () => {
       try {
         const ratings = await getUserRatings(normalizedHandle);

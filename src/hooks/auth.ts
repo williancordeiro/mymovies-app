@@ -2,6 +2,11 @@ import { useMutation } from "@tanstack/react-query";
 import { useSyncExternalStore } from "react";
 
 import { login, register } from "../api/auth";
+import {
+  getAuthSessionSnapshot,
+  subscribeToAuthSession,
+  type AuthSessionSnapshot,
+} from "../session/authSession";
 import type {
   LoginError,
   LoginInput,
@@ -10,11 +15,6 @@ import type {
   RegisterInput,
   RegisterResponse,
 } from "../utils/auth";
-import {
-  getAuthSessionSnapshot,
-  subscribeToAuthSession,
-  type AuthSessionSnapshot,
-} from "../session/authSession";
 
 const getServerSnapshot = (): AuthSessionSnapshot => ({
   session: null,
@@ -23,7 +23,11 @@ const getServerSnapshot = (): AuthSessionSnapshot => ({
 });
 
 export function useAuthSession(): AuthSessionSnapshot {
-  return useSyncExternalStore(subscribeToAuthSession, getAuthSessionSnapshot, getServerSnapshot);
+  return useSyncExternalStore(
+    subscribeToAuthSession,
+    getAuthSessionSnapshot,
+    getServerSnapshot,
+  );
 }
 
 export function useRegister() {
