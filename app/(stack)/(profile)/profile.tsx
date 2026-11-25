@@ -4,7 +4,6 @@ import { router } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   ScrollView,
   Text,
@@ -223,7 +222,7 @@ export default function ProfileScreen() {
             accessibilityRole="button"
             className="mt-6 flex-row items-center gap-2 rounded-full border bg-primary px-7 py-3"
             hitSlop={8}
-            onPress={() => Alert.alert("Em Desenvolvimento")}
+            onPress={() => router.push("/update")}
             style={({ pressed }) => ({ opacity: pressed ? 0.72 : 1 })}
           >
             <Ionicons
