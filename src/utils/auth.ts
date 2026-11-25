@@ -59,7 +59,12 @@ export function isRegisterError(error: unknown): error is RegisterError {
   return error instanceof RegisterError;
 }
 
-export type LoginErrorKind = "credentials" | "validation" | "network" | "persistence" | "general";
+export type LoginErrorKind =
+  | "credentials"
+  | "validation"
+  | "network"
+  | "persistence"
+  | "general";
 
 export class LoginError extends Error {
   readonly kind: LoginErrorKind;
