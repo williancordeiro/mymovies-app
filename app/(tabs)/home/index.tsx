@@ -10,7 +10,7 @@ import {
 import MovieCard from "../../../src/components/MovieCard/MovieCard";
 import { APP_COLORS } from "../../../src/constants/colors";
 import { useMovies } from "../../../src/hooks/movie";
-import type { Movie } from "../../../src/utils/movie";
+import type { Movie } from "../../../src/utils/movies/movie";
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();

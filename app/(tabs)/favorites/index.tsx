@@ -9,7 +9,7 @@ import MovieCard from "../../../src/components/MovieCard/MovieCard";
 import { APP_COLORS } from "../../../src/constants/colors";
 import { useAuthSession } from "../../../src/hooks/auth";
 import { useFavorites } from "../../../src/hooks/movie";
-import type { MovieCardData } from "../../../src/utils/movie";
+import type { MovieCardData } from "../../../src/utils/movies/movie";
 
 export default function FavoritesScreen() {
   const { session, isRestored } = useAuthSession();
