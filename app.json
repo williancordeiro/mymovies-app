@@ -36,7 +36,15 @@
       "expo-status-bar",
       "expo-web-browser",
       "expo-secure-store",
-      "expo-image"
+      "expo-image",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permita que o My Movies acesse suas fotos para atualizar seu ícone de perfil.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

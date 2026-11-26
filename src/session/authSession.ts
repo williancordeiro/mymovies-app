@@ -1,7 +1,11 @@
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 
-import type { AuthenticatedUser, LoginResponse } from "../utils/auth";
+import type {
+  AuthenticatedResponse,
+  AuthenticatedUser,
+  LoginResponse,
+} from "../utils/auth";
 
 const SESSION_KEY = "mymovies.auth.session.v1";
 
@@ -18,6 +22,14 @@ export class SessionStorageError extends Error {
       "Não foi possível salvar sua sessão neste dispositivo. Tente novamente.",
     );
     this.name = "SessionStorageError";
+  }
+}
+
+/** A request completed after the session that started it was replaced. */
+export class SessionReplacedError extends Error {
+  constructor() {
+    super("Sua sessão foi alterada. Tente novamente.");
+    this.name = "SessionReplacedError";
   }
 }
 
@@ -99,7 +111,7 @@ function isExpired(session: AuthSession): boolean {
   return session.expiresAt !== null && session.expiresAt <= Date.now();
 }
 
-function toSession(response: LoginResponse): AuthSession {
+function toSession(response: AuthenticatedResponse): AuthSession {
   return {
     token: response.token,
     user: response.user,
@@ -160,6 +172,51 @@ export async function persistSession(
     await writeSession(session);
   } catch {
     throw new SessionStorageError();
+  }
+
+  setCurrentSession(session);
+  return session;
+}
+
+/**
+ * Replaces the persisted session only when it is still the session that
+ * started the request. This prevents a late profile response from restoring
+ * credentials that were superseded by a login or logout.
+ */
+export async function replaceSession(
+  response: AuthenticatedResponse,
+  expectedToken: string,
+): Promise<AuthSession> {
+  if (getSession()?.token !== expectedToken) {
+    throw new SessionReplacedError();
+  }
+
+  const session = toSession(response);
+
+  if (isExpired(session)) {
+    throw new SessionStorageError();
+  }
+
+  try {
+    await writeSession(session);
+  } catch {
+    throw new SessionStorageError();
+  }
+
+  if (getSession()?.token !== expectedToken) {
+    const latestSession = getSession();
+
+    try {
+      if (latestSession) {
+        await writeSession(latestSession);
+      } else {
+        await removeStoredSession();
+      }
+    } catch {
+      // The in-memory session remains authoritative if rollback storage fails.
+    }
+
+    throw new SessionReplacedError();
   }
 
   setCurrentSession(session);
@@ -237,7 +294,15 @@ export function getSessionToken(): string | null {
   return getSession()?.token ?? null;
 }
 
-export async function clearSession(): Promise<void> {
+/**
+ * Clears the current session, optionally only if it is still identified by the
+ * token that initiated an asynchronous operation.
+ */
+export async function clearSession(expectedToken?: string): Promise<boolean> {
+  if (expectedToken !== undefined && getSession()?.token !== expectedToken) {
+    return false;
+  }
+
   setCurrentSession(null);
 
   try {
@@ -245,4 +310,15 @@ export async function clearSession(): Promise<void> {
   } catch {
     throw new SessionStorageError();
   }
+
+  const latestSession = getSession();
+  if (latestSession) {
+    try {
+      await writeSession(latestSession);
+    } catch {
+      // The newer in-memory session remains authoritative if persistence fails.
+    }
+  }
+
+  return true;
 }
