@@ -13,27 +13,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import CardMovieProfile from "../../../src/components/CardMovieProfile/CardMovieProfile";
 import FloatingBackButton from "../../../src/components/FloatingBackButton/FloatingBackButton";
+import { resolveAvatarUri } from "../../../src/components/shared/imageUrls";
 import { APP_COLORS } from "../../../src/constants/colors";
 import { useProfile } from "../../../src/hooks/profile";
 import { useUserRatings } from "../../../src/hooks/users";
 import { getSession } from "../../../src/session/authSession";
 import { isProfileError } from "../../../src/utils/profile";
-
-function resolveAvatarUri(
-  avatarFile: string | null | undefined,
-): string | null {
-  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
-
-  if (!avatarFile || !apiUrl) {
-    return null;
-  }
-
-  try {
-    return new URL(avatarFile, new URL(apiUrl).origin).toString();
-  } catch {
-    return null;
-  }
-}
 
 function RetryState({
   message,

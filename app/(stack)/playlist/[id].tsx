@@ -1,21 +1,14 @@
 import { FlashList } from "@shopify/flash-list";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useMemo, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { ConfirmPlaylistActionModal } from "../../../src/components/ConfirmPlaylistActionModal/ConfirmPlaylistActionModal";
 import MovieCard from "../../../src/components/MovieCard/MovieCard";
-import {
-  ConfirmPlaylistActionModal,
-} from "../../../src/components/ConfirmPlaylistActionModal/ConfirmPlaylistActionModal";
+import PlaylistDetailHeader from "../../../src/components/PlaylistDetail/PlaylistDetailHeader";
+import PlaylistMovieSearch from "../../../src/components/PlaylistDetail/PlaylistMovieSearch";
+import PlaylistMoviesFooter from "../../../src/components/PlaylistDetail/PlaylistMoviesFooter";
 import { useAuthSession } from "../../../src/hooks/auth";
 import { useMovieSearch } from "../../../src/hooks/movie";
 import {
@@ -39,7 +32,9 @@ function PlaylistDetailContent({ playlistId }: { playlistId: number }) {
   const [titleDraft, setTitleDraft] = useState("");
   const [titleError, setTitleError] = useState<string>();
   const renaming = useRef(false);
-  const [movieToRemove, setMovieToRemove] = useState<MovieCardData | null>(null);
+  const [movieToRemove, setMovieToRemove] = useState<MovieCardData | null>(
+    null,
+  );
   const [deleting, setDeleting] = useState(false);
   const { session, isRestored } = useAuthSession();
   const movies = useMemo<MovieCardData[]>(() => {
@@ -57,6 +52,7 @@ function PlaylistDetailContent({ playlistId }: { playlistId: number }) {
       }));
   }, [detail.data]);
   const search = useMovieSearch(query);
+  const title = detail.data?.pages[0]?.playlist.title ?? "Playlist";
   const submitTitle = async () => {
     const title = titleDraft.trim();
     if (!title) {
@@ -69,10 +65,26 @@ function PlaylistDetailContent({ playlistId }: { playlistId: number }) {
       await rename.mutateAsync({ playlistId, title });
       setEditing(false);
     } catch {
-      // The mutation error stays visible and permits a retry.
     } finally {
       renaming.current = false;
     }
+  };
+  const startEditing = () => {
+    setTitleDraft(title);
+    setTitleError(undefined);
+    setEditing(true);
+  };
+  const cancelEditing = () => {
+    setEditing(false);
+    setTitleError(undefined);
+  };
+  const updateTitleDraft = (value: string) => {
+    setTitleDraft(value);
+    setTitleError(undefined);
+  };
+  const submitSearch = () => setQuery(text.trim());
+  const addMovie = (movieId: number) => {
+    void add.mutateAsync({ playlistId, movieId });
   };
 
   if (!isRestored) {
@@ -117,7 +129,9 @@ function PlaylistDetailContent({ playlistId }: { playlistId: number }) {
           <View className="flex-1 px-1.5 pb-3">
             <MovieCard
               movie={item}
-              onRemoveFromPlaylist={editing ? () => setMovieToRemove(item) : undefined}
+              onRemoveFromPlaylist={
+                editing ? () => setMovieToRemove(item) : undefined
+              }
               removingFromPlaylist={remove.isPending}
             />
           </View>
@@ -133,110 +147,40 @@ function PlaylistDetailContent({ playlistId }: { playlistId: number }) {
         contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 120 }}
         ListHeaderComponent={
           <View className="px-1.5 pb-5 pt-4">
-            <View className="flex-row items-center justify-between gap-3">
-              {editing ? (
-                <TextInput
-                  value={titleDraft}
-                  onChangeText={(value) => { setTitleDraft(value); setTitleError(undefined); }}
-                  editable={!rename.isPending}
-                  maxLength={255}
-                  accessibilityLabel="Título da playlist"
-                  className="flex-1 rounded-xl border border-[#4a4a4c] bg-[#1c1c1e] px-3 text-xl font-bold text-white"
-                  style={{
-                    height: 44,
-                    paddingVertical: 0,
-                    textAlignVertical: "center",
-                    includeFontPadding: false,
-                  }}
-                  onSubmitEditing={() => void submitTitle()}
-                />
-              ) : <Text className="flex-1 text-xl font-bold text-white">{detail.data?.pages[0]?.playlist.title ?? "Playlist"}</Text>}
-              {editing ? <>
-                <Pressable accessibilityRole="button" accessibilityLabel="Salvar título da playlist" accessibilityState={{ disabled: rename.isPending, busy: rename.isPending }} disabled={rename.isPending} onPress={() => void submitTitle()} className="h-11 w-11 items-center justify-center rounded-full bg-[#262626]"><Ionicons name="checkmark" size={23} color="#e07000" accessible={false} /></Pressable>
-                <Pressable accessibilityRole="button" accessibilityLabel="Cancelar edição do título" accessibilityState={{ disabled: rename.isPending }} disabled={rename.isPending} onPress={() => { setEditing(false); setTitleError(undefined); }} className="h-11 w-11 items-center justify-center rounded-full bg-[#262626]"><Ionicons name="close" size={23} color="#fff" accessible={false} /></Pressable>
-              </> : <>
-                <Pressable accessibilityRole="button" accessibilityLabel="Editar título da playlist" disabled={!detail.data?.pages[0] || rename.isPending} onPress={() => { setTitleDraft(detail.data?.pages[0]?.playlist.title ?? ""); setTitleError(undefined); setEditing(true); }} className="h-11 w-11 items-center justify-center rounded-full bg-[#262626]"><Ionicons name="pencil" size={20} color="#fff" accessible={false} /></Pressable>
-                <Pressable accessibilityRole="button" accessibilityLabel="Excluir esta playlist" disabled={!detail.data?.pages[0] || deletePlaylist.isPending} onPress={() => setDeleting(true)} className="h-11 w-11 items-center justify-center rounded-full bg-[#262626]"><Ionicons name="trash-outline" size={20} color="#ff8a80" accessible={false} /></Pressable>
-              </>}
-            </View>
-            {titleError || rename.error ? <Text accessibilityLiveRegion="polite" className="mt-2 text-[#ff8a80]">{titleError ?? rename.error?.message}</Text> : null}
-            <TextInput
-              value={text}
-              onChangeText={setText}
-              placeholder="Buscar filme para adicionar"
-              placeholderTextColor="#a3a3a3"
-              accessibilityLabel="Buscar filme para adicionar"
-              className="mt-5 min-h-12 rounded-xl bg-[#1c1c1e] px-4 text-white"
-              onSubmitEditing={() => setQuery(text.trim())}
-              returnKeyType="search"
+            <PlaylistDetailHeader
+              title={title}
+              editing={editing}
+              titleDraft={titleDraft}
+              titleError={titleError}
+              renameError={rename.error?.message}
+              isRenamePending={rename.isPending}
+              canManage={Boolean(detail.data?.pages[0])}
+              isDeletePending={deletePlaylist.isPending}
+              onTitleChange={updateTitleDraft}
+              onSubmitTitle={() => void submitTitle()}
+              onStartEditing={startEditing}
+              onCancelEditing={cancelEditing}
+              onRequestDelete={() => setDeleting(true)}
             />
-            {query.length >= 3 ? (
-              <View className="mt-3">
-                {search.isPending ? (
-                  <ActivityIndicator color="#e07000" />
-                ) : (
-                  <ScrollView
-                    nestedScrollEnabled
-                    keyboardShouldPersistTaps="handled"
-                    showsVerticalScrollIndicator
-                    indicatorStyle="white"
-                    style={{ maxHeight: 360 }}
-                    contentContainerStyle={{ paddingRight: 4 }}
-                  >
-                    {search.data?.map((movie) => (
-                      <Pressable
-                        key={movie.id}
-                        accessibilityRole="button"
-                        accessibilityLabel={`Adicionar ${movie.title}`}
-                        disabled={add.isPending}
-                        onPress={() =>
-                          void add.mutateAsync({ playlistId, movieId: movie.id })
-                        }
-                        className="mb-2 min-h-16 justify-center rounded-xl border border-[#4a4a4c] px-4 py-3"
-                      >
-                        <Text
-                          numberOfLines={2}
-                          className="font-semibold leading-5 text-white"
-                        >
-                          {movie.title}
-                        </Text>
-                      </Pressable>
-                    ))}
-                  </ScrollView>
-                )}
-              </View>
-            ) : null}
-            {add.error ? (
-              <Text
-                accessibilityLiveRegion="polite"
-                className="mt-2 text-[#ff8a80]"
-              >
-                {add.error.message}
-              </Text>
-            ) : null}
+            <PlaylistMovieSearch
+              text={text}
+              query={query}
+              movies={search.data}
+              isSearchPending={search.isPending}
+              isAddPending={add.isPending}
+              addError={add.error?.message}
+              onTextChange={setText}
+              onSubmit={submitSearch}
+              onAdd={addMovie}
+            />
           </View>
         }
         ListFooterComponent={
-          detail.isFetchNextPageError ? (
-            <View className="items-center py-5">
-              <Text className="text-[#ff8a80]">
-                Não foi possível carregar mais filmes.
-              </Text>
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => void detail.fetchNextPage()}
-                className="mt-3 rounded-full border border-[#4a4a4c] px-4 py-2"
-              >
-                <Text className="font-semibold text-white">
-                  Tentar novamente
-                </Text>
-              </Pressable>
-            </View>
-          ) : detail.isFetchingNextPage ? (
-            <View className="py-5">
-              <ActivityIndicator color="#e07000" />
-            </View>
-          ) : null
+          <PlaylistMoviesFooter
+            isError={detail.isFetchNextPageError}
+            isFetching={detail.isFetchingNextPage}
+            onRetry={() => void detail.fetchNextPage()}
+          />
         }
         ListEmptyComponent={
           <View className="min-h-64 items-center justify-center px-8">
@@ -273,8 +217,13 @@ function PlaylistDetailContent({ playlistId }: { playlistId: number }) {
         destructive
         pending={remove.isPending}
         error={remove.error?.message}
-        onClose={() => { if (!remove.isPending) setMovieToRemove(null); }}
-        onConfirm={async () => { if (movieToRemove) await remove.mutateAsync({ playlistId, movieId: movieToRemove.id }); }}
+        onClose={() => {
+          if (!remove.isPending) setMovieToRemove(null);
+        }}
+        onConfirm={async () => {
+          if (movieToRemove)
+            await remove.mutateAsync({ playlistId, movieId: movieToRemove.id });
+        }}
       />
       <ConfirmPlaylistActionModal
         visible={deleting}
@@ -284,8 +233,13 @@ function PlaylistDetailContent({ playlistId }: { playlistId: number }) {
         destructive
         pending={deletePlaylist.isPending}
         error={deletePlaylist.error?.message}
-        onClose={() => { if (!deletePlaylist.isPending) setDeleting(false); }}
-        onConfirm={async () => { await deletePlaylist.mutateAsync({ playlistId }); router.replace("/movie-lists"); }}
+        onClose={() => {
+          if (!deletePlaylist.isPending) setDeleting(false);
+        }}
+        onConfirm={async () => {
+          await deletePlaylist.mutateAsync({ playlistId });
+          router.replace("/movie-lists");
+        }}
       />
     </SafeAreaView>
   );

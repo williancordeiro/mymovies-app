@@ -15,6 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import CreatePlaylistModal from "../../../src/components/CreatePlaylistModal/CreatePlaylistModal";
 import PlaylistDropdown from "../../../src/components/PlaylistDropdown/PlaylistDropdown";
 import Rating from "../../../src/components/Rating/Rating";
+import { resolveMovieImageUrl } from "../../../src/components/shared/imageUrls";
 import { APP_COLORS } from "../../../src/constants/colors";
 import { useAuthSession } from "../../../src/hooks/auth";
 import {
@@ -29,14 +30,6 @@ import {
   usePlaylists,
 } from "../../../src/hooks/playlist";
 import type { MovieDetails } from "../../../src/utils/movies/movieDetails";
-
-const IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
-
-function getImageUrl(path: string | null, size: "w500" | "w1280") {
-  if (!path) return null;
-  if (path.startsWith("http://") || path.startsWith("https://")) return path;
-  return `${IMAGE_BASE_URL}/${size}/${path.replace(/^\/+/, "")}`;
-}
 
 function formatRuntime(runtime: number | null) {
   if (!runtime) return null;
@@ -89,8 +82,8 @@ function MovieContent({
       (playlist) => !ids.has(playlist.id) && (ids.add(playlist.id), true),
     );
   }, [playlistsQuery.data]);
-  const backdropUrl = getImageUrl(movie.backdrop_path, "w1280");
-  const posterUrl = getImageUrl(movie.poster_path, "w500");
+  const backdropUrl = resolveMovieImageUrl(movie.backdrop_path, "w1280");
+  const posterUrl = resolveMovieImageUrl(movie.poster_path, "w500");
   const myMoviesRating = Number.isFinite(movie.mymovies_rating_average)
     ? movie.mymovies_rating_average.toFixed(1)
     : "—";

@@ -21,6 +21,7 @@ import {
 } from "react-native-safe-area-context";
 import { z } from "zod";
 
+import { resolveAvatarUri } from "../../../../src/components/shared/imageUrls";
 import { APP_COLORS } from "../../../../src/constants/colors";
 import {
   useProfile,
@@ -48,19 +49,6 @@ const profileSchema = z.object({
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
-
-function resolveAvatarUri(
-  avatarFile: string | null | undefined,
-): string | null {
-  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
-  if (!avatarFile || !apiUrl) return null;
-
-  try {
-    return new URL(avatarFile, new URL(apiUrl).origin).toString();
-  } catch {
-    return null;
-  }
-}
 
 function validateAvatar(
   asset: ImagePicker.ImagePickerAsset,
