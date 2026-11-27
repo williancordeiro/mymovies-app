@@ -36,6 +36,8 @@ export class SessionReplacedError extends Error {
 let currentSession: AuthSession | null = null;
 let sessionGeneration = 0;
 let sessionRestored = false;
+let storageGeneration = 0;
+let storageQueue: Promise<void> = Promise.resolve();
 const listeners = new Set<() => void>();
 
 export interface AuthSessionSnapshot {
@@ -142,9 +144,17 @@ async function writeSession(session: AuthSession): Promise<void> {
     return;
   }
 
-  await SecureStore.setItemAsync(SESSION_KEY, JSON.stringify(session), {
-    keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK,
-  });
+  storageGeneration += 1;
+  const operation = storageQueue.then(() =>
+    SecureStore.setItemAsync(SESSION_KEY, JSON.stringify(session), {
+      keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK,
+    }),
+  );
+  storageQueue = operation.then(
+    () => undefined,
+    () => undefined,
+  );
+  await operation;
 }
 
 async function removeStoredSession(): Promise<void> {
@@ -152,7 +162,15 @@ async function removeStoredSession(): Promise<void> {
     return;
   }
 
-  await SecureStore.deleteItemAsync(SESSION_KEY);
+  storageGeneration += 1;
+  const operation = storageQueue.then(() =>
+    SecureStore.deleteItemAsync(SESSION_KEY),
+  );
+  storageQueue = operation.then(
+    () => undefined,
+    () => undefined,
+  );
+  await operation;
 }
 
 /**
@@ -231,48 +249,72 @@ export async function restoreSession(): Promise<AuthSession | null> {
     return getSession();
   }
 
+  const restorationGeneration = sessionGeneration;
+  const restorationStorageGeneration = storageGeneration;
   let serializedSession: string | null;
 
   try {
     serializedSession = await SecureStore.getItemAsync(SESSION_KEY);
   } catch {
-    throw new SessionStorageError();
-  }
-
-  if (!serializedSession) {
-    setCurrentSession(null);
+    // Storage may be temporarily unavailable. Leave any newer in-memory
+    // session intact and let consumers continue through the signed-out flow.
     sessionRestored = true;
     notifySessionChange();
-    return null;
+    return getSession();
+  }
+
+  const isCurrentRestoration =
+    sessionGeneration === restorationGeneration &&
+    storageGeneration === restorationStorageGeneration;
+
+  if (!serializedSession) {
+    if (isCurrentRestoration) {
+      setCurrentSession(null);
+    }
+    sessionRestored = true;
+    notifySessionChange();
+    return getSession();
   }
 
   try {
     const storedSession: unknown = JSON.parse(serializedSession);
 
     if (!isStoredSession(storedSession) || isExpired(storedSession)) {
-      setCurrentSession(null);
-      await removeStoredSession();
+      if (isCurrentRestoration) {
+        setCurrentSession(null);
+        try {
+          await removeStoredSession();
+        } catch {
+          // The invalid entry cannot be used, even if cleanup is unavailable.
+        }
+      }
       sessionRestored = true;
       notifySessionChange();
-      return null;
+      return getSession();
     }
 
-    setCurrentSession(storedSession);
+    if (isCurrentRestoration) {
+      setCurrentSession(storedSession);
+    }
     sessionRestored = true;
     notifySessionChange();
-    return currentSession;
+    return getSession();
   } catch {
-    setCurrentSession(null);
+    if (isCurrentRestoration) {
+      setCurrentSession(null);
+    }
     sessionRestored = true;
     notifySessionChange();
 
-    try {
-      await removeStoredSession();
-    } catch {
-      // The invalid entry cannot be used, even if cleanup is unavailable.
+    if (isCurrentRestoration) {
+      try {
+        await removeStoredSession();
+      } catch {
+        // The invalid entry cannot be used, even if cleanup is unavailable.
+      }
     }
 
-    return null;
+    return getSession();
   }
 }
 

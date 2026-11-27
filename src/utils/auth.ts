@@ -15,8 +15,8 @@ export interface AuthenticatedUser {
   handle: string;
   email: string;
   role: string;
-  avatar_file: string;
-  banner_file: string;
+  avatar_file: string | null;
+  banner_file: string | null;
 }
 
 export interface AuthenticatedResponse {

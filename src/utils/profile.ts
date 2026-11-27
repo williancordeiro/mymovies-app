@@ -12,15 +12,7 @@ export interface Profile {
   bannerFile: string | null;
 }
 
-type ProfileSource = Pick<
-  AuthenticatedUser,
-  "id" | "username" | "handle" | "email" | "role"
-> & {
-  avatar_file: string | null;
-  banner_file: string | null;
-};
-
-export function toProfile(user: ProfileSource): Profile {
+export function toProfile(user: AuthenticatedUser): Profile {
   return {
     id: user.id,
     username: user.username,
