@@ -8,6 +8,8 @@ module.exports = {
     extend: {
       colors: {
         primary: APP_COLORS.primary,
+        appBackground: APP_COLORS.background,
+        appSurface: APP_COLORS.surface,
       },
     },
   },
