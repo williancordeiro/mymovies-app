@@ -5,24 +5,13 @@ import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 
 import { APP_COLORS } from "../../constants/colors";
-
-const POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
+import { resolveMovieImageUrl } from "../shared/imageUrls";
 
 export interface CardMovieProfileProps {
   movieId: number;
   title: string;
   posterPath: string | null;
   rating: number | null;
-}
-
-function getPosterUrl(posterPath: string | null): string | null {
-  if (!posterPath) return null;
-
-  if (posterPath.startsWith("http://") || posterPath.startsWith("https://")) {
-    return posterPath;
-  }
-
-  return `${POSTER_BASE_URL}/${posterPath.replace(/^\/+/, "")}`;
 }
 
 function getRatingLabel(rating: number | null): string {
@@ -39,7 +28,7 @@ function CardMovieProfile({
   posterPath,
   rating,
 }: CardMovieProfileProps) {
-  const posterUrl = getPosterUrl(posterPath);
+  const posterUrl = resolveMovieImageUrl(posterPath, "w500");
   const normalizedRating =
     rating !== null && Number.isFinite(rating)
       ? Math.min(5, Math.max(0, rating))

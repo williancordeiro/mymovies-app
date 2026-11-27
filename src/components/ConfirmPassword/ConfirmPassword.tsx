@@ -104,7 +104,9 @@ function ConfirmPasswordContent({
             </Text>
             <View
               className="min-h-[52px] justify-center rounded-[14px] border-2 bg-[#292929] px-4"
-              style={{ borderColor: displayedError ? "#ef4444" : APP_COLORS.primary }}
+              style={{
+                borderColor: displayedError ? "#ef4444" : APP_COLORS.primary,
+              }}
             >
               <TextInput
                 accessibilityHint={displayedError}
@@ -149,7 +151,9 @@ function ConfirmPasswordContent({
                 <Text className="font-bold text-white">Cancelar</Text>
               </Pressable>
               <Pressable
-                accessibilityLabel={disabled ? "Confirmando senha" : confirmLabel}
+                accessibilityLabel={
+                  disabled ? "Confirmando senha" : confirmLabel
+                }
                 accessibilityRole="button"
                 accessibilityState={{ disabled, busy: disabled }}
                 className={`min-h-12 flex-1 items-center justify-center rounded-xl px-4 ${destructive ? "bg-red-600" : "bg-primary"}`}
