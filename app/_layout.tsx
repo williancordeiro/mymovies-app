@@ -5,7 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { DarkTheme, Stack, ThemeProvider } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import "../global.css";
 import { APP_COLORS } from "../src/constants/colors";
 import { useAuthSession } from "../src/hooks/auth";
@@ -48,22 +48,10 @@ function SessionCacheCoordinator() {
 }
 
 export default function RootLayout() {
-  const [isSessionRestored, setIsSessionRestored] = useState(false);
+  const { isRestored: isSessionRestored } = useAuthSession();
 
   useEffect(() => {
-    let isMounted = true;
-
-    void restoreSession()
-      .catch(() => null)
-      .finally(() => {
-        if (isMounted) {
-          setIsSessionRestored(true);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
+    void restoreSession();
   }, []);
 
   return (
