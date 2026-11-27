@@ -31,6 +31,7 @@ import type {
   SensitiveAccountMessageResponse,
 } from "../utils/auth";
 import { SensitiveAccountError } from "../utils/auth";
+import { toProfile } from "../utils/profile";
 
 const getServerSnapshot = (): AuthSessionSnapshot => ({
   session: null,
@@ -100,22 +101,6 @@ const profileKeys = {
   me: (userId: number, token: string) =>
     ["profile", "me", userId, token] as const,
 };
-
-function toProfile(user: ChangeEmailResponseUser) {
-  return {
-    id: user.id,
-    username: user.username,
-    handle: user.handle,
-    email: user.email,
-    role: user.role,
-    avatarFile: user.avatar_file ?? null,
-    bannerFile: user.banner_file ?? null,
-  };
-}
-
-type ChangeEmailResponseUser = NonNullable<
-  Awaited<ReturnType<typeof changeEmail>>["user"]
->;
 
 export function useChangeEmail() {
   const queryClient = useQueryClient();

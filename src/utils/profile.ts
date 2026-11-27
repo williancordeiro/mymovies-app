@@ -12,6 +12,26 @@ export interface Profile {
   bannerFile: string | null;
 }
 
+type ProfileSource = Pick<
+  AuthenticatedUser,
+  "id" | "username" | "handle" | "email" | "role"
+> & {
+  avatar_file: string | null;
+  banner_file: string | null;
+};
+
+export function toProfile(user: ProfileSource): Profile {
+  return {
+    id: user.id,
+    username: user.username,
+    handle: user.handle,
+    email: user.email,
+    role: user.role,
+    avatarFile: user.avatar_file ?? null,
+    bannerFile: user.banner_file ?? null,
+  };
+}
+
 export interface UpdateProfileInput {
   username?: string;
   handle?: string;

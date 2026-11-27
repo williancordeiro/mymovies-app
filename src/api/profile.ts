@@ -5,6 +5,7 @@ import { api } from "../interceptor/api";
 import {
   isUpdateProfileError,
   toProfileError,
+  toProfile,
   UpdateProfileError,
   type AvatarUploadInput,
   type Profile,
@@ -12,7 +13,7 @@ import {
   type UpdateProfileInput,
 } from "../utils/profile";
 
-export type { UpdatedProfileResponse } from "../utils/profile";
+export { toProfile, type UpdatedProfileResponse } from "../utils/profile";
 
 type ProfileResponse = {
   id: number;
@@ -23,18 +24,6 @@ type ProfileResponse = {
   avatar_file: string | null;
   banner_file: string | null;
 };
-
-export function toProfile(profile: ProfileResponse): Profile {
-  return {
-    id: profile.id,
-    username: profile.username,
-    handle: profile.handle,
-    email: profile.email,
-    role: profile.role,
-    avatarFile: profile.avatar_file,
-    bannerFile: profile.banner_file,
-  };
-}
 
 type UpdateErrorResponse = {
   message?: unknown;

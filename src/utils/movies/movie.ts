@@ -19,7 +19,6 @@ export interface Movie {
   user_favorited: boolean;
 }
 
-/** Data needed to render a movie card, including the smaller favorite DTO. */
 export interface MovieCardData {
   id: number;
   title: string;

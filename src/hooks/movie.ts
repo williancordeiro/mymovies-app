@@ -24,7 +24,12 @@ import type { RateMovieInput, RateMovieResponse } from "../utils/movies/rating";
 import { useAuthSession } from "./auth";
 
 type SessionScope = "anonymous" | `user:${number}:${number}`;
-const favoriteMutations = new Map<string, Promise<FavoriteMutationResponse>>();
+type PendingFavoriteMutation = {
+  favorited: boolean;
+  request: Promise<FavoriteMutationResponse>;
+};
+
+const favoriteMutations = new Map<string, PendingFavoriteMutation>();
 
 export function getMovieSessionScope(
   userId: number | undefined,
@@ -132,13 +137,22 @@ export function useSetMovieFavorite() {
     mutationFn: (input) => {
       const key = `${scope}:${input.movieId}`;
       const existing = favoriteMutations.get(key);
-      if (existing) return existing;
-      const request = (
-        input.favorited
-          ? addFavorite(input.movieId)
-          : removeFavorite(input.movieId)
-      ).finally(() => favoriteMutations.delete(key));
-      favoriteMutations.set(key, request);
+      if (existing?.favorited === input.favorited) return existing.request;
+
+      const request = (existing?.request ?? Promise.resolve())
+        .catch(() => undefined)
+        .then(() =>
+          input.favorited
+            ? addFavorite(input.movieId)
+            : removeFavorite(input.movieId),
+        );
+      const pending = { favorited: input.favorited, request };
+      favoriteMutations.set(key, pending);
+      void request.finally(() => {
+        if (favoriteMutations.get(key) === pending) {
+          favoriteMutations.delete(key);
+        }
+      }).catch(() => undefined);
       return request;
     },
     onMutate: () => ({ scope }),
