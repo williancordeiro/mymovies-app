@@ -1,19 +1,27 @@
 import { isAxiosError } from "axios";
 
 import { api } from "../interceptor/api";
+import {
+  CatalogError,
+  isCatalogRequestCanceled,
+  toCatalogError,
+} from "../utils/movies/catalogError";
 import type {
   FavoriteErrorResponse,
   FavoriteMutationResponse,
   FavoritesPage,
   FavoritesRequest,
 } from "../utils/movies/favorite";
+import type { Movie, MovieSearchResponse } from "../utils/movies/movie";
 import type {
   MovieApiError,
   MovieDetails,
   MovieDetailsResponse,
 } from "../utils/movies/movieDetails";
-import type { Movie, MovieSearchResponse } from "../utils/movies/movie";
-import type { MoviesPage, MoviesResponse } from "../utils/movies/moviePagination";
+import type {
+  MoviesPage,
+  MoviesResponse,
+} from "../utils/movies/moviePagination";
 import type {
   RateMovieErrorResponse,
   RateMovieInput,
@@ -153,18 +161,27 @@ export async function searchMovies(
   query: string,
   signal?: AbortSignal,
 ): Promise<Movie[]> {
-  const { data } = await api.get<MovieSearchResponse>("/movies/search", {
-    params: { q: query.trim() },
-    signal,
-  });
+  try {
+    const { data } = await api.get<MovieSearchResponse>("/movies/search", {
+      params: { q: query.trim() },
+      signal,
+    });
 
-  return data.results;
+    return data.results;
+  } catch (error) {
+    if (isCatalogRequestCanceled(error)) throw error;
+    throw toCatalogError(error, "search");
+  }
 }
 
 export async function getMovies(): Promise<MoviesPage> {
-  const { data } = await api.get<MoviesResponse>("/movies");
+  try {
+    const { data } = await api.get<MoviesResponse>("/movies");
 
-  return data.movies;
+    return data.movies;
+  } catch (error) {
+    throw toCatalogError(error, "list");
+  }
 }
 
 export async function getMovieById(id: number): Promise<MovieDetails> {
@@ -172,13 +189,21 @@ export async function getMovieById(id: number): Promise<MovieDetails> {
     throw new TypeError("O ID do filme deve ser um número inteiro positivo.");
   }
 
-  const { data } = await api.get<MovieDetailsResponse>(`/movies/${id}`);
+  try {
+    const { data } = await api.get<MovieDetailsResponse>(`/movies/${id}`);
 
-  if (isMovieApiError(data.movie)) {
-    throw new Error(data.movie.status_message);
+    if (isMovieApiError(data.movie)) {
+      throw new CatalogError({
+        message: "Filme não encontrado.",
+        kind: "permanent",
+        status: data.movie.status_code,
+      });
+    }
+
+    return data.movie;
+  } catch (error) {
+    throw toCatalogError(error, "detail");
   }
-
-  return data.movie;
 }
 
 export async function rateMovie({

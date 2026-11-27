@@ -2,10 +2,11 @@ import { isAxiosError } from "axios";
 import { Platform } from "react-native";
 
 import { api } from "../interceptor/api";
+import type { AuthenticatedUser } from "../utils/auth";
 import {
   isUpdateProfileError,
-  toProfileError,
   toProfile,
+  toProfileError,
   UpdateProfileError,
   type AvatarUploadInput,
   type Profile,
@@ -14,16 +15,6 @@ import {
 } from "../utils/profile";
 
 export { toProfile, type UpdatedProfileResponse } from "../utils/profile";
-
-type ProfileResponse = {
-  id: number;
-  username: string;
-  handle: string;
-  email: string;
-  role: string;
-  avatar_file: string | null;
-  banner_file: string | null;
-};
 
 type UpdateErrorResponse = {
   message?: unknown;
@@ -256,7 +247,7 @@ async function createAvatarFormData(
 
 export async function getMyProfile(): Promise<Profile> {
   try {
-    const { data } = await api.get<ProfileResponse>("/profile");
+    const { data } = await api.get<AuthenticatedUser>("/profile");
     return toProfile(data);
   } catch (error) {
     throw toProfileError(error, "perfil");
