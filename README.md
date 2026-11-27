@@ -23,13 +23,18 @@ O aplicativo utiliza as seguintes tecnologias e bibliotecas:
 | **TanStack Query** | Gerenciamento de consultas, cache e sincronização de dados remotos. |
 | **Axios** | Cliente HTTP para comunicação com a API. |
 | **React Hook Form e Zod** | Gerenciamento e validação de formulários. |
+| **Hookform Resolvers** | Integração entre a validação do Zod e os formulários. |
 | **Expo SecureStore** | Armazenamento seguro da sessão em dispositivos nativos. |
-| **Expo Image** | Exibição otimizada das imagens dos filmes. |
+| **Expo Image e Expo Image Picker** | Exibição otimizada de imagens e seleção de imagem para o perfil. |
+| **Expo Constants, Font, Linking, Splash Screen, Status Bar e Web Browser** | Recursos da plataforma Expo para configuração, fontes, links, tela de abertura, barra de status e navegação web. |
 | **FlashList** | Renderização eficiente das listas de filmes. |
 | **NativeWind e Tailwind CSS** | Estilização da interface com classes utilitárias. |
 | **Zustand** | Gerenciamento de estado da aplicação. |
 | **Expo Vector Icons** | Biblioteca de ícones da interface. |
-| **ESLint e Prettier Plugin Tailwind CSS** | Análise do código e ordenação das classes Tailwind CSS. |
+| **React Native Reanimated, Safe Area Context, Screens, Worklets, React Native CSS, React DOM e React Native Web** | Dependências de suporte à interface, animações, áreas seguras, navegação e execução na web. |
+| **Babel Preset Expo e tipos do React** | Ferramentas de compilação e suporte à tipagem durante o desenvolvimento. |
+| **PostCSS, Tailwind CSS PostCSS, Lightning CSS e Prettier Plugin Tailwind CSS** | Processamento e organização dos estilos utilitários. |
+| **ESLint, ESLint Config Expo e React Test Renderer** | Ferramentas de análise estática e suporte à renderização de componentes em testes. |
 
 ## Protótipos de telas
 
@@ -58,7 +63,7 @@ Marque cada checkpoint conforme suas entregas forem concluídas e as respectivas
 - [x] **Cadastro, login e perfil:** implementar cadastro, autenticação, sessão e gerenciamento do perfil do usuário.
 - [x] **Avaliações e notas:** permitir criar e alterar avaliações de filmes.
 - [x] **Favoritos:** permitir adicionar, remover e consultar os filmes favoritos do usuário.
-- [ ] **Listas de filmes assistidos:** permitir criar e gerenciar listas pessoais, adicionando e removendo filmes.
+- [x] **Listas de filmes assistidos:** permitir criar e gerenciar listas pessoais, adicionando e removendo filmes.
 - [ ] **Integração e entrega final:** integrar os módulos, executar os testes, atualizar a documentação e preparar a entrega.
 
 ## Atualizações desde o último checkpoint
@@ -96,5 +101,18 @@ Marque cada checkpoint conforme suas entregas forem concluídas e as respectivas
 - **Favoritos — [PR #24](https://github.com/williancordeiro/mymovies-app/pull/24), incorporado em 25/11/2026**
   - Implementação da adição e remoção de filmes favoritos nas telas de catálogo, busca e detalhes.
   - Criação da tela de favoritos com paginação, atualização por gesto e estados de carregamento, erro e lista vazia.
+
+- **Atualização de perfil — [PR #26](https://github.com/williancordeiro/mymovies-app/pull/26), incorporado em 26/11/2026**
+  - Criação da área de atualização de perfil, incluindo alteração de nome, identificador e imagem do usuário.
+  - Inclusão de fluxos para alterar e-mail e senha mediante confirmação da senha atual.
+  - Integração da seleção de imagem com o Expo Image Picker e atualização dos dados pela API.
+
+- **Criação de playlists — [PR #29](https://github.com/williancordeiro/mymovies-app/pull/29), incorporado em 26/11/2026**
+  - Implementação de listas personalizadas, com criação e visualização de suas páginas de detalhes.
+  - Inclusão de filmes em playlists a partir dos detalhes do filme.
+
+- **Atualizações das playlists — [PR #31](https://github.com/williancordeiro/mymovies-app/pull/31), incorporado em 27/11/2026**
+  - Adição de edição e exclusão de playlists, com modais de confirmação para as ações.
+  - Possibilidade de remover filmes das playlists e aprimoramento da capa e do tratamento de erros.
 
 O período de **23/11 a 30/11** será reservado para ajustes decorrentes da avaliação final, correções emergenciais e consolidação da documentação do projeto.
