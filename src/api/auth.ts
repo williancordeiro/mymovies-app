@@ -429,7 +429,6 @@ export async function deleteAccount(
   }
 }
 
-/** Ends the current server session when a bearer token is available. */
 export async function logout(): Promise<void> {
   await api.post("/auth/logout");
 }

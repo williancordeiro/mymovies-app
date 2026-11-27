@@ -1,8 +1,7 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Controller, useForm, type Control } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import {
   ActivityIndicator,
   Alert,
@@ -11,7 +10,6 @@ import {
   Pressable,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import {
@@ -20,7 +18,7 @@ import {
 } from "react-native-safe-area-context";
 import { z } from "zod";
 
-import { APP_COLORS } from "../../../src/constants/colors";
+import AuthFormField from "../../../src/components/Auth/AuthFormField";
 import { useLogin } from "../../../src/hooks/auth";
 import { isLoginError } from "../../../src/utils/auth";
 
@@ -99,7 +97,7 @@ export default function LoginScreen() {
             </View>
 
             <View className="gap-4">
-              <FormField
+              <AuthFormField
                 control={control}
                 error={errors.email?.message}
                 label="E-mail"
@@ -116,7 +114,7 @@ export default function LoginScreen() {
                 }}
                 returnKeyType="next"
               />
-              <FormField
+              <AuthFormField
                 control={control}
                 error={errors.password?.message}
                 label="Senha"
@@ -214,78 +212,5 @@ export default function LoginScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
-  );
-}
-
-type FormFieldProps = {
-  control: Control<LoginFormValues>;
-  error?: string;
-  label: string;
-  name: keyof LoginFormValues;
-  placeholder: string;
-  autoCapitalize: "none";
-  autoComplete: "email" | "current-password";
-  editable: boolean;
-  keyboardType?: "default" | "email-address";
-  icon: "at" | "lock-closed";
-  onFocus: () => void;
-  onSubmitEditing?: () => void;
-  returnKeyType: "next" | "done";
-  secureTextEntry?: boolean;
-};
-
-function FormField({
-  control,
-  error,
-  label,
-  name,
-  placeholder,
-  icon,
-  ...inputProps
-}: FormFieldProps) {
-  return (
-    <View>
-      <Text className="mb-2 text-base font-bold text-white">{label}</Text>
-      <Controller
-        control={control}
-        name={name}
-        render={({ field: { onBlur, onChange, value } }) => (
-          <View
-            className="min-h-[58px] flex-row items-center rounded-[14px] border-2 bg-[#292929] px-5"
-            style={{ borderColor: error ? "#ef4444" : APP_COLORS.primary }}
-          >
-            <Ionicons
-              accessible={false}
-              color={APP_COLORS.primary}
-              name={icon}
-              size={23}
-            />
-            <TextInput
-              {...inputProps}
-              accessibilityHint={error}
-              accessibilityLabel={label}
-              accessibilityState={{ disabled: !inputProps.editable }}
-              autoCorrect={false}
-              className="ml-4 flex-1 py-2 text-base text-white"
-              onBlur={onBlur}
-              onChangeText={onChange}
-              placeholder={placeholder}
-              placeholderTextColor="#8A8A8F"
-              selectionColor={APP_COLORS.primary}
-              underlineColorAndroid="transparent"
-              value={value}
-            />
-          </View>
-        )}
-      />
-      {error && (
-        <Text
-          accessibilityLiveRegion="polite"
-          className="mt-2 text-sm text-red-300"
-        >
-          {error}
-        </Text>
-      )}
-    </View>
   );
 }
