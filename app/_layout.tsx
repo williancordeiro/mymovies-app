@@ -24,8 +24,8 @@ const theme = {
   ...DarkTheme,
   colors: {
     ...DarkTheme.colors,
-    background: "#000000",
-    card: "#262626",
+    background: APP_COLORS.background,
+    card: APP_COLORS.surface,
     primary: APP_COLORS.primary,
   },
 };
@@ -76,7 +76,7 @@ export default function RootLayout() {
             screenOptions={{
               animation: "slide_from_right",
               headerShown: false,
-              contentStyle: { backgroundColor: "#000000" },
+              contentStyle: { backgroundColor: APP_COLORS.background },
             }}
           />
         )}

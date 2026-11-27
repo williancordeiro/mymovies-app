@@ -1,7 +1,7 @@
 import { Stack, usePathname } from "expo-router";
-import { Header } from "expo-router/build/react-navigation/elements/index";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
+import { AppStackHeader } from "../../src/components/AppHeader/AppHeader";
 import FloatingBackButton from "../../src/components/FloatingBackButton/FloatingBackButton";
 
 export default function StackLayout() {
@@ -15,19 +15,8 @@ export default function StackLayout() {
         screenOptions={{
           animation: "slide_from_right",
           headerShown: true,
-          header: () => (
-            <Header
-              headerShadowVisible={false}
-              headerStyle={{ backgroundColor: "#000000", height: 104 }}
-              headerTitleAlign="left"
-              headerTitle={() => (
-                <Text className="text-3xl font-semibold uppercase tracking-widest text-primary">
-                  My Movies
-                </Text>
-              )}
-              title="My Movies"
-            />
-          ),
+          header: () => <AppStackHeader />,
+          title: "My Movies",
         }}
       />
       {!hasScreenBackButton && <FloatingBackButton />}
