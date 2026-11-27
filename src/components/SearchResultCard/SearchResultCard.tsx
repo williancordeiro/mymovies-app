@@ -6,17 +6,14 @@ import { Pressable, Text, View } from "react-native";
 
 import { APP_COLORS } from "../../constants/colors";
 import type { Movie } from "../../utils/movies/movie";
+import { resolveMovieImageUrl } from "../shared/imageUrls";
 
 interface SearchResultCardProps {
   movie: Movie;
 }
 
 function SearchResultCard({ movie }: SearchResultCardProps) {
-  const posterUrl = movie.poster_path
-    ? /^https?:\/\//.test(movie.poster_path)
-      ? movie.poster_path
-      : `https://image.tmdb.org/t/p/w342/${movie.poster_path.replace(/^\/+/, "")}`
-    : null;
+  const posterUrl = resolveMovieImageUrl(movie.poster_path, "w342");
   const year = movie.release_date?.match(/^\d{4}/)?.[0] ?? "Ano não informado";
   const rating = Number.isFinite(movie.mymovies_rating_average)
     ? movie.mymovies_rating_average.toFixed(1)

@@ -74,9 +74,7 @@ export default function PlaylistDropdown({
     try {
       await onSelect(playlist);
       setVisible(false);
-    } catch {
-      // The mutation error stays visible in the menu so the user can retry.
-    }
+    } catch {}
   };
 
   return (
@@ -90,7 +88,12 @@ export default function PlaylistDropdown({
               : "Adicionar a uma playlist"
           }
           accessibilityHint="Abre as suas playlists"
-          accessibilityState={{ expanded: visible }}
+          accessibilityState={{
+            expanded: visible,
+            disabled: isPending,
+            busy: isPending,
+          }}
+          disabled={isPending}
           onPress={open}
           className="h-11 w-11 items-center justify-center rounded-full bg-[#262626]"
         >
@@ -123,6 +126,7 @@ export default function PlaylistDropdown({
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Nova lista"
+              accessibilityState={{ disabled: isPending }}
               onPress={create}
               disabled={isPending}
               className="min-h-12 flex-row items-center gap-3 px-4"
@@ -169,6 +173,7 @@ export default function PlaylistDropdown({
                   key={playlist.id}
                   accessibilityRole="button"
                   accessibilityLabel={`Adicionar à playlist ${playlist.title}`}
+                  accessibilityState={{ disabled: isPending, busy: isPending }}
                   disabled={isPending}
                   onPress={() => void select(playlist)}
                   className="min-h-12 justify-center px-4"
@@ -185,6 +190,10 @@ export default function PlaylistDropdown({
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Carregar mais playlists"
+                  accessibilityState={{
+                    disabled: isFetchingMore || isPending,
+                    busy: isFetchingMore,
+                  }}
                   disabled={isFetchingMore || isPending}
                   onPress={onLoadMore}
                   className="min-h-12 items-center justify-center border-t border-[#3a3a3c]"

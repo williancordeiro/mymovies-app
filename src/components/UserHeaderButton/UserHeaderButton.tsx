@@ -8,25 +8,12 @@ import {
   getAuthSessionSnapshot,
   subscribeToAuthSession,
 } from "../../session/authSession";
+import { resolveAvatarUri } from "../shared/imageUrls";
 
 type UserHeaderButtonProps = {
   disabled?: boolean;
   onPress?: () => void;
 };
-
-function resolveAvatarUri(avatarFile: string | undefined): string | null {
-  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
-
-  if (!avatarFile || !apiUrl) {
-    return null;
-  }
-
-  try {
-    return new URL(avatarFile, new URL(apiUrl).origin).toString();
-  } catch {
-    return null;
-  }
-}
 
 export default function UserHeaderButton({
   disabled = false,
@@ -50,8 +37,7 @@ export default function UserHeaderButton({
       className="mr-4 h-16 w-16 items-center justify-center rounded-full"
       disabled={isDisabled}
       onPress={
-        onPress ??
-        (() => router.push(session ? "/profile" : "/auth/login"))
+        onPress ?? (() => router.push(session ? "/profile" : "/auth/login"))
       }
       style={({ pressed }) => ({
         opacity: isDisabled ? 0.45 : pressed ? 0.65 : 1,

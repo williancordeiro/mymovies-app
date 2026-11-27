@@ -97,9 +97,7 @@ export default function Rating({
         "Avaliação salva com sucesso.",
       );
       setIsModalVisible(false);
-    } catch {
-      // The mutation error remains visible and allows the user to retry.
-    }
+    } catch {}
   };
 
   return (
