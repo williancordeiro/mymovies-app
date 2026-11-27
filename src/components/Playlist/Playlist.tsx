@@ -3,6 +3,7 @@ import { FlashList } from "@shopify/flash-list";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
 import type { PlaylistMetadata } from "../../utils/playlist/playlist";
+import PlaylistCover from "../PlaylistCover/PlaylistCover";
 
 type Props = {
   playlists: PlaylistMetadata[];
@@ -115,15 +116,15 @@ export default function Playlist({
               accessibilityRole="button"
               accessibilityLabel={`Abrir playlist ${item.playlist.title}`}
               onPress={() => onOpen(item.playlist)}
-              className="aspect-square justify-end rounded-xl border-2 border-primary bg-[#262626] px-3 pb-4"
+              className="aspect-square overflow-hidden rounded-xl border-2 border-primary bg-[#262626]"
               style={({ pressed }) => ({ opacity: pressed ? 0.78 : 1 })}
             >
-              <Text
-                numberOfLines={2}
-                className="text-center text-base font-semibold leading-5 text-white"
-              >
-                {item.playlist.title}
-              </Text>
+              <PlaylistCover title={item.playlist.title} movies={item.playlist.cover_movies} />
+              <View className="absolute bottom-0 left-0 right-0 bg-black/75 px-3 py-3">
+                <Text numberOfLines={2} className="text-center text-base font-semibold leading-5 text-white">
+                  {item.playlist.title}
+                </Text>
+              </View>
             </Pressable>
           )}
         </View>
