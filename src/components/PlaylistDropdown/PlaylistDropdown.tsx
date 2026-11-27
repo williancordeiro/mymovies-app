@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 
+import { APP_COLORS } from "../../constants/colors";
 import type { PlaylistMetadata } from "../../utils/playlist/playlist";
 
 type TriggerPosition = { top: number; right: number };
@@ -22,6 +23,7 @@ type Props = {
   isPending: boolean;
   isFetchingMore: boolean;
   hasNextPage: boolean;
+  hasMovieInPlaylist?: boolean;
   onRequestOpen: () => boolean;
   onCreate: () => void;
   onSelect: (playlist: PlaylistMetadata) => Promise<void>;
@@ -37,6 +39,7 @@ export default function PlaylistDropdown({
   isPending,
   isFetchingMore,
   hasNextPage,
+  hasMovieInPlaylist = false,
   onRequestOpen,
   onCreate,
   onSelect,
@@ -81,13 +84,21 @@ export default function PlaylistDropdown({
       <View ref={trigger} collapsable={false}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Adicionar a uma playlist"
+          accessibilityLabel={
+            hasMovieInPlaylist
+              ? "Gerenciar playlists deste filme"
+              : "Adicionar a uma playlist"
+          }
           accessibilityHint="Abre as suas playlists"
           accessibilityState={{ expanded: visible }}
           onPress={open}
           className="h-11 w-11 items-center justify-center rounded-full bg-[#262626]"
         >
-          <Ionicons name="add" size={29} color="#ffffff" />
+          <Ionicons
+            name={hasMovieInPlaylist ? "checkmark" : "add"}
+            size={29}
+            color={hasMovieInPlaylist ? APP_COLORS.primary : "#ffffff"}
+          />
         </Pressable>
       </View>
 

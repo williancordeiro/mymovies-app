@@ -1,6 +1,7 @@
 import {
   useInfiniteQuery,
   useMutation,
+  useQuery,
   useQueryClient,
   type InfiniteData,
 } from "@tanstack/react-query";
@@ -39,6 +40,8 @@ export const playlistKeys = {
   list: (scope: SessionScope) => [...playlistKeys.all(scope), "list"] as const,
   detail: (scope: SessionScope, id: number) =>
     [...playlistKeys.all(scope), "detail", id] as const,
+  membership: (scope: SessionScope, movieId: number) =>
+    [...playlistKeys.all(scope), "membership", movieId] as const,
 };
 
 function useCurrentScope() {
@@ -112,6 +115,122 @@ export function usePlaylists() {
   return { ...query, refreshFromStart };
 }
 
+function hasMovieInDetailPages(
+  data: InfiniteData<PlaylistDetailsPage, number> | undefined,
+  movieId: number,
+): boolean {
+  return Boolean(
+    data?.pages.some((page) =>
+      page.movies.some((movie) => movie.movie_id === movieId),
+    ),
+  );
+}
+
+export function useMoviePlaylistMembership(movieId: number) {
+  const queryClient = useQueryClient();
+  const { scope, isRestored, hasSession } = useCurrentScope();
+  const queryKey = playlistKeys.membership(scope, movieId);
+
+  return useQuery<
+    boolean,
+    PlaylistError,
+    boolean,
+    ReturnType<typeof playlistKeys.membership>
+  >({
+    queryKey,
+    enabled:
+      isRestored && hasSession && Number.isInteger(movieId) && movieId > 0,
+    retry: shouldRetry,
+    queryFn: async ({ signal }) => {
+      if (queryClient.getQueryData<boolean>(queryKey) === true) return true;
+
+      const assertCurrentSession = () => {
+        const snapshot = getAuthSessionSnapshot();
+        if (
+          !snapshot.isRestored ||
+          !snapshot.session ||
+          getMovieSessionScope(snapshot.session.user.id, snapshot.generation) !==
+            scope
+        ) {
+          throw new PlaylistError("Sua sessão foi alterada. Entre novamente.");
+        }
+      };
+      const readDetails = async (playlistId: number) => {
+        const cached = queryClient.getQueryData<
+          InfiniteData<PlaylistDetailsPage, number>
+        >(playlistKeys.detail(scope, playlistId));
+        if (hasMovieInDetailPages(cached, movieId)) return true;
+
+        const firstPage = await getPlaylistDetails(
+          playlistId,
+          { page: 1, perPage: 100 },
+          signal,
+        );
+        assertCurrentSession();
+        if (firstPage.movies.some((movie) => movie.movie_id === movieId)) {
+          return true;
+        }
+
+        for (let page = 2; page <= firstPage.pages; page += 1) {
+          const detailPage = await getPlaylistDetails(
+            playlistId,
+            { page, perPage: 100 },
+            signal,
+          );
+          assertCurrentSession();
+          if (detailPage.movies.some((movie) => movie.movie_id === movieId)) {
+            return true;
+          }
+        }
+
+        return false;
+      };
+
+      assertCurrentSession();
+      for (let page = 1; ; page += 1) {
+        const playlistPage = await getPlaylists(
+          { page, perPage: 100 },
+          signal,
+        );
+        assertCurrentSession();
+
+        for (const playlist of playlistPage.playlists) {
+          if (await readDetails(playlist.id)) return true;
+        }
+
+        if (page >= playlistPage.pages) {
+          return queryClient.getQueryData<boolean>(queryKey) === true;
+        }
+      }
+    },
+  });
+}
+
+async function confirmMoviePlaylistMembership(
+  queryClient: ReturnType<typeof useQueryClient>,
+  scope: SessionScope,
+  movieId: number,
+): Promise<boolean> {
+  const queryKey = playlistKeys.membership(scope, movieId);
+  try {
+    await queryClient.cancelQueries({ queryKey, exact: true });
+  } catch {
+    // A confirmed write must not fail because a background read could not stop.
+  }
+
+  const snapshot = getAuthSessionSnapshot();
+  const currentScope = getMovieSessionScope(
+    snapshot.session?.user.id,
+    snapshot.generation,
+  );
+  if (!snapshot.isRestored || !snapshot.session || currentScope !== scope) {
+    return false;
+  }
+
+  queryClient.setQueryData<boolean>(queryKey, true);
+  return true;
+}
+
 function prependPlaylist(
   data: PlaylistInfiniteData | undefined,
   playlist: PlaylistMetadata,
@@ -163,7 +282,7 @@ export function useCreatePlaylist() {
       return request;
     },
     onMutate: () => ({ scope }),
-    onSuccess: (response, _input, context) => {
+    onSuccess: async (response, input, context) => {
       if (!context) return;
       const snapshot = getAuthSessionSnapshot();
       const currentScope = getMovieSessionScope(
@@ -173,6 +292,17 @@ export function useCreatePlaylist() {
       if (currentScope !== context.scope) return;
 
       const key = playlistKeys.list(context.scope);
+      for (const movieId of input.movieIds ?? []) {
+        if (
+          !(await confirmMoviePlaylistMembership(
+            queryClient,
+            context.scope,
+            movieId,
+          ))
+        ) {
+          return;
+        }
+      }
       queryClient.setQueryData<PlaylistInfiniteData>(key, (data) =>
         prependPlaylist(data, response.data),
       );
@@ -268,14 +398,24 @@ export function useAddMovieToPlaylist() {
       return request;
     },
     onMutate: (input) => ({ scope, playlistId: input.playlistId }),
-    onSuccess: (result, _input, context) => {
-      if (!context || !result.added) return;
+    onSuccess: async (result, input, context) => {
+      if (!context) return;
       const snapshot = getAuthSessionSnapshot();
       const currentScope = getMovieSessionScope(
         snapshot.session?.user.id,
         snapshot.generation,
       );
       if (currentScope !== context.scope) return;
+      if (
+        !(await confirmMoviePlaylistMembership(
+          queryClient,
+          context.scope,
+          input.movieId,
+        ))
+      ) {
+        return;
+      }
+      if (!result.added) return;
       // The write is already confirmed. Refresh failures remain query errors.
       void queryClient.invalidateQueries({
         queryKey: playlistKeys.detail(context.scope, context.playlistId),

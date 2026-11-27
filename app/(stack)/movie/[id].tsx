@@ -25,6 +25,7 @@ import {
 import {
   useAddMovieToPlaylist,
   useCreatePlaylist,
+  useMoviePlaylistMembership,
   usePlaylists,
 } from "../../../src/hooks/playlist";
 import type { MovieDetails } from "../../../src/utils/movies/movieDetails";
@@ -76,6 +77,7 @@ function MovieContent({
   const playlistsQuery = usePlaylists();
   const addMovie = useAddMovieToPlaylist();
   const createPlaylist = useCreatePlaylist();
+  const playlistMembership = useMoviePlaylistMembership(movieId);
   const { session } = useAuthSession();
   const [createVisible, setCreateVisible] = useState(false);
   const selectionSubmitting = useRef(false);
@@ -210,6 +212,7 @@ function MovieContent({
               isPending={addMovie.isPending}
               isFetchingMore={playlistsQuery.isFetchingNextPage}
               hasNextPage={Boolean(playlistsQuery.hasNextPage)}
+              hasMovieInPlaylist={playlistMembership.data === true}
               onRequestOpen={openPlaylistSelector}
               onCreate={() => setCreateVisible(true)}
               onSelect={selectPlaylist}
