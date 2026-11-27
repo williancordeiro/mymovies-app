@@ -8,6 +8,7 @@ import {
 
 import {
   createPlaylist,
+  deletePlaylist,
   getPlaylistDetails,
   getPlaylists,
   PlaylistError,
@@ -28,7 +29,7 @@ type SessionScope = ReturnType<typeof getMovieSessionScope>;
 type PlaylistInfiniteData = InfiniteData<PlaylistPage, number>;
 
 const pendingCreations = new Map<string, Promise<CreatePlaylistResponse>>();
-const playlistUpdates = new Map<string, Promise<AddMovieToPlaylistResult>>();
+const playlistUpdates = new Map<string, Promise<unknown>>();
 
 function shouldRetry(failureCount: number, error: unknown): boolean {
   const status = error instanceof PlaylistError ? error.status : undefined;
@@ -320,45 +321,73 @@ export function useCreatePlaylist() {
 export type AddMovieToPlaylistInput = { playlistId: number; movieId: number };
 export type AddMovieToPlaylistResult = { added: boolean };
 
+export type RenamePlaylistInput = { playlistId: number; title: string };
+export type RemoveMovieFromPlaylistInput = {
+  playlistId: number;
+  movieId: number;
+};
+export type RemoveMovieFromPlaylistResult = { removed: boolean };
+export type DeletePlaylistInput = { playlistId: number };
+
+function assertSessionScope(scope: SessionScope): void {
+  const snapshot = getAuthSessionSnapshot();
+  if (
+    !snapshot.isRestored ||
+    !snapshot.session ||
+    getMovieSessionScope(snapshot.session.user.id, snapshot.generation) !== scope
+  ) {
+    throw new PlaylistError("Sua sessão foi alterada. Entre novamente.");
+  }
+}
+
+function queuePlaylistMutation<T>(
+  scope: SessionScope,
+  playlistId: number,
+  task: () => Promise<T>,
+): Promise<T> {
+  const key = `${scope}:${playlistId}`;
+  const previous = playlistUpdates.get(key) ?? Promise.resolve();
+  const request = previous.catch(() => undefined).then(task);
+  playlistUpdates.set(key, request);
+  void request.finally(() => {
+    if (playlistUpdates.get(key) === request) playlistUpdates.delete(key);
+  }).catch(() => undefined);
+  return request;
+}
+
+async function readAllPlaylistDetails(
+  playlistId: number,
+  scope: SessionScope,
+): Promise<PlaylistDetailsPage[]> {
+  assertSessionScope(scope);
+  const firstPage = await getPlaylistDetails(playlistId, { page: 1, perPage: 100 });
+  assertSessionScope(scope);
+  const pages = [firstPage];
+  for (let page = 2; page <= firstPage.pages; page += 1) {
+    pages.push(await getPlaylistDetails(playlistId, { page, perPage: 100 }));
+    assertSessionScope(scope);
+  }
+  return pages;
+}
+
 async function addMovieToPlaylist(
   { playlistId, movieId }: AddMovieToPlaylistInput,
   scope: SessionScope,
 ): Promise<AddMovieToPlaylistResult> {
-  const assertCurrentSession = () => {
-    const snapshot = getAuthSessionSnapshot();
-    if (
-      !snapshot.isRestored ||
-      !snapshot.session ||
-      getMovieSessionScope(snapshot.session.user.id, snapshot.generation) !==
-        scope
-    ) {
-      throw new PlaylistError("Sua sessão foi alterada. Entre novamente.");
-    }
-  };
-  assertCurrentSession();
-  const firstPage = await getPlaylistDetails(playlistId, {
-    page: 1,
-    perPage: 100,
-  });
-  assertCurrentSession();
-  const pages: PlaylistDetailsPage[] = [firstPage];
-  for (let page = 2; page <= firstPage.pages; page += 1) {
-    assertCurrentSession();
-    pages.push(await getPlaylistDetails(playlistId, { page, perPage: 100 }));
-    assertCurrentSession();
-  }
+  const pages = await readAllPlaylistDetails(playlistId, scope);
+  const firstPage = pages[0];
   const movieIds = pages.flatMap((page) =>
     page.movies.map((movie) => movie.movie_id),
   );
   if (movieIds.includes(movieId)) return { added: false };
 
-  assertCurrentSession();
+  assertSessionScope(scope);
   await updatePlaylist({
     id: playlistId,
     title: firstPage.playlist.title,
     movieIds: [...new Set([...movieIds, movieId])],
   });
-  assertCurrentSession();
+  assertSessionScope(scope);
   return { added: true };
 }
 
@@ -383,19 +412,9 @@ export function useAddMovieToPlaylist() {
       ) {
         throw new PlaylistError("Sua sessão expirou. Entre novamente.");
       }
-      const key = `${scope}:${input.playlistId}`;
-      const previous =
-        playlistUpdates.get(key) ?? Promise.resolve({ added: false });
-      const request = previous
-        .catch(() => ({ added: false }))
-        .then(() => addMovieToPlaylist(input, scope));
-      playlistUpdates.set(key, request);
-      void request
-        .finally(() => {
-          if (playlistUpdates.get(key) === request) playlistUpdates.delete(key);
-        })
-        .catch(() => undefined);
-      return request;
+      return queuePlaylistMutation(scope, input.playlistId, () =>
+        addMovieToPlaylist(input, scope),
+      );
     },
     onMutate: (input) => ({ scope, playlistId: input.playlistId }),
     onSuccess: async (result, input, context) => {
@@ -424,6 +443,160 @@ export function useAddMovieToPlaylist() {
       void queryClient.invalidateQueries({
         queryKey: playlistKeys.list(context.scope),
         refetchType: "active",
+      });
+    },
+    retry: false,
+  });
+}
+
+function invalidatePlaylist(
+  queryClient: ReturnType<typeof useQueryClient>,
+  scope: SessionScope,
+  playlistId: number,
+): void {
+  void queryClient.invalidateQueries({
+    queryKey: playlistKeys.list(scope),
+    refetchType: "active",
+  });
+  void queryClient.invalidateQueries({
+    queryKey: playlistKeys.detail(scope, playlistId),
+    refetchType: "active",
+  });
+}
+
+function replacePlaylistMetadata(
+  data: PlaylistInfiniteData | undefined,
+  playlist: PlaylistMetadata,
+): PlaylistInfiniteData | undefined {
+  if (!data) return data;
+  return {
+    ...data,
+    pages: data.pages.map((page) => ({
+      ...page,
+      playlists: page.playlists.map((item) =>
+        item.id === playlist.id ? { ...item, ...playlist } : item,
+      ),
+    })),
+  };
+}
+
+function removePlaylistFromCache(
+  data: PlaylistInfiniteData | undefined,
+  playlistId: number,
+): PlaylistInfiniteData | undefined {
+  if (!data) return data;
+  return {
+    ...data,
+    pages: data.pages.map((page) => ({
+      ...page,
+      playlists: page.playlists.filter((item) => item.id !== playlistId),
+      total: Math.max(0, page.total - (page.playlists.some((item) => item.id === playlistId) ? 1 : 0)),
+    })),
+  };
+}
+
+export function useRenamePlaylist() {
+  const queryClient = useQueryClient();
+  const { scope } = useCurrentScope();
+  return useMutation<
+    CreatePlaylistResponse,
+    PlaylistError,
+    RenamePlaylistInput,
+    { scope: SessionScope; playlistId: number }
+  >({
+    mutationFn: (input) =>
+      queuePlaylistMutation(scope, input.playlistId, async () => {
+        assertSessionScope(scope);
+        const response = await updatePlaylist({ id: input.playlistId, title: input.title });
+        assertSessionScope(scope);
+        return response;
+      }),
+    onMutate: (input) => ({ scope, playlistId: input.playlistId }),
+    onSuccess: (response, _input, context) => {
+      if (!context) return;
+      try {
+        assertSessionScope(context.scope);
+      } catch {
+        return;
+      }
+      queryClient.setQueryData<InfiniteData<PlaylistDetailsPage, number>>(
+        playlistKeys.detail(context.scope, context.playlistId),
+        (data) => data
+          ? { ...data, pages: data.pages.map((page) => ({ ...page, playlist: response.data })) }
+          : data,
+      );
+      queryClient.setQueryData<PlaylistInfiniteData>(
+        playlistKeys.list(context.scope),
+        (data) => replacePlaylistMetadata(data, response.data),
+      );
+      invalidatePlaylist(queryClient, context.scope, context.playlistId);
+    },
+    retry: false,
+  });
+}
+
+export function useRemoveMovieFromPlaylist() {
+  const queryClient = useQueryClient();
+  const { scope } = useCurrentScope();
+  return useMutation<
+    RemoveMovieFromPlaylistResult,
+    PlaylistError,
+    RemoveMovieFromPlaylistInput,
+    { scope: SessionScope; playlistId: number; movieId: number }
+  >({
+    mutationFn: (input) => queuePlaylistMutation(scope, input.playlistId, async () => {
+      const pages = await readAllPlaylistDetails(input.playlistId, scope);
+      const movieIds = pages.flatMap((page) => page.movies.map((movie) => movie.movie_id));
+      if (!movieIds.includes(input.movieId)) return { removed: false };
+      assertSessionScope(scope);
+      await updatePlaylist({
+        id: input.playlistId,
+        title: pages[0].playlist.title,
+        movieIds: movieIds.filter((movieId) => movieId !== input.movieId),
+      });
+      assertSessionScope(scope);
+      return { removed: true };
+    }),
+    onMutate: (input) => ({ scope, playlistId: input.playlistId, movieId: input.movieId }),
+    onSuccess: (result, _input, context) => {
+      if (!context) return;
+      try { assertSessionScope(context.scope); } catch { return; }
+      if (result.removed) invalidatePlaylist(queryClient, context.scope, context.playlistId);
+      void queryClient.invalidateQueries({
+        queryKey: playlistKeys.membership(context.scope, context.movieId),
+        exact: true,
+      });
+    },
+    retry: false,
+  });
+}
+
+export function useDeletePlaylist() {
+  const queryClient = useQueryClient();
+  const { scope } = useCurrentScope();
+  return useMutation<
+    void,
+    PlaylistError,
+    DeletePlaylistInput,
+    { scope: SessionScope; playlistId: number }
+  >({
+    mutationFn: (input) => queuePlaylistMutation(scope, input.playlistId, async () => {
+      assertSessionScope(scope);
+      await deletePlaylist(input.playlistId);
+      assertSessionScope(scope);
+    }),
+    onMutate: (input) => ({ scope, playlistId: input.playlistId }),
+    onSuccess: (_result, _input, context) => {
+      if (!context) return;
+      try { assertSessionScope(context.scope); } catch { return; }
+      queryClient.removeQueries({ queryKey: playlistKeys.detail(context.scope, context.playlistId), exact: true });
+      queryClient.setQueryData<PlaylistInfiniteData>(
+        playlistKeys.list(context.scope),
+        (data) => removePlaylistFromCache(data, context.playlistId),
+      );
+      void queryClient.invalidateQueries({ queryKey: playlistKeys.list(context.scope), refetchType: "active" });
+      void queryClient.invalidateQueries({
+        queryKey: [...playlistKeys.all(context.scope), "membership"],
       });
     },
     retry: false,

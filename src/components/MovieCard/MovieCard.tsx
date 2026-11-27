@@ -12,6 +12,8 @@ const POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
 interface MovieCardProps {
   movie: MovieCardData;
   badgeVariant?: "rating" | "favorite";
+  onRemoveFromPlaylist?: () => void;
+  removingFromPlaylist?: boolean;
 }
 
 function getPosterUrl(posterPath: string | null) {
@@ -23,7 +25,12 @@ function getPosterUrl(posterPath: string | null) {
   return `${POSTER_BASE_URL}/${posterPath.replace(/^\/+/, "")}`;
 }
 
-function MovieCard({ movie, badgeVariant = "rating" }: MovieCardProps) {
+function MovieCard({
+  movie,
+  badgeVariant = "rating",
+  onRemoveFromPlaylist,
+  removingFromPlaylist = false,
+}: MovieCardProps) {
   const posterUrl = getPosterUrl(movie.poster_path);
   const releaseYear = movie.release_date
     ? new Date(`${movie.release_date}T00:00:00`).getFullYear()
@@ -37,10 +44,11 @@ function MovieCard({ movie, badgeVariant = "rating" }: MovieCardProps) {
       : "—";
 
   return (
-    <Pressable
+    <View className="relative overflow-hidden rounded-2xl bg-[#1c1c1e]">
+      <Pressable
       accessibilityRole="button"
       accessibilityLabel={`Abrir ${movie.title}, ${releaseYear ?? "ano não informado"}, ${badgeVariant === "favorite" ? "favorito" : hasRating ? `avaliação ${rating}` : "avaliação indisponível"}`}
-      className="overflow-hidden rounded-2xl bg-[#1c1c1e]"
+      className="overflow-hidden"
       onPress={() =>
         router.push({
           pathname: "/movie/[id]",
@@ -87,23 +95,7 @@ function MovieCard({ movie, badgeVariant = "rating" }: MovieCardProps) {
               accessible={false}
             />
           </View>
-        ) : (
-          <View
-            accessible
-            accessibilityLabel={
-              hasRating ? `Avaliação ${rating}` : "Avaliação indisponível"
-            }
-            className="absolute right-2 top-2 flex-row items-center gap-1 rounded-full bg-black/80 px-2 py-1"
-          >
-            <Ionicons
-              name="star"
-              size={13}
-              color={APP_COLORS.ratingStar}
-              accessible={false}
-            />
-            <Text className="text-xs font-bold text-white">{rating}</Text>
-          </View>
-        )}
+        ) : null}
       </View>
 
       <View className="justify-between px-3 py-3" style={{ height: 88 }}>
@@ -114,7 +106,30 @@ function MovieCard({ movie, badgeVariant = "rating" }: MovieCardProps) {
           {releaseYear ?? "Ano não informado"}
         </Text>
       </View>
-    </Pressable>
+      </Pressable>
+      {badgeVariant === "rating" ? (
+        <>
+          {onRemoveFromPlaylist ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Remover ${movie.title} da playlist`}
+              accessibilityState={{ disabled: removingFromPlaylist, busy: removingFromPlaylist }}
+              disabled={removingFromPlaylist}
+              onPress={onRemoveFromPlaylist}
+              className="absolute left-2 top-2 h-11 w-11 items-center justify-center rounded-full bg-[#262626]"
+            >
+              <Ionicons name="trash-outline" size={21} color="#ff8a80" accessible={false} />
+            </Pressable>
+          ) : null}
+          <View className="absolute right-2 top-2 flex-row items-center gap-1 rounded-full bg-black/80 px-2 py-1">
+          <View accessible accessibilityLabel={hasRating ? `Avaliação ${rating}` : "Avaliação indisponível"} className="flex-row items-center gap-1">
+            <Ionicons name="star" size={13} color={APP_COLORS.ratingStar} accessible={false} />
+            <Text className="text-xs font-bold text-white">{rating}</Text>
+          </View>
+          </View>
+        </>
+      ) : null}
+    </View>
   );
 }
 

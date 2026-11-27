@@ -3,6 +3,13 @@ export interface PlaylistMetadata {
   title: string;
   created_at: string;
   updated_at: string;
+  /** Optional until the list endpoint exposes the cover projection. */
+  cover_movies?: PlaylistCoverMovie[];
+}
+
+export interface PlaylistCoverMovie {
+  movie_id: number;
+  poster_path: string | null;
 }
 
 export interface CreatePlaylistInput {
@@ -13,6 +20,10 @@ export interface CreatePlaylistInput {
 export interface CreatePlaylistResponse {
   success: true;
   data: PlaylistMetadata;
+}
+
+export interface DeletePlaylistResponse {
+  success: true;
 }
 
 export interface PlaylistPage {
