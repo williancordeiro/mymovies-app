@@ -201,8 +201,12 @@ export default function SearchScreen() {
                 placeholderTextColor="#A3A3A3"
                 selectionColor={APP_COLORS.primary}
                 underlineColorAndroid="transparent"
-                className="min-h-12 flex-1 text-base text-white"
-                style={{ minWidth: 0 }}
+                className="flex-1 self-stretch text-base leading-5 text-white"
+                style={{
+                  minWidth: 0,
+                  paddingVertical: 0,
+                  textAlignVertical: "center",
+                }}
                 returnKeyType="search"
                 autoCorrect={false}
                 autoCapitalize="none"

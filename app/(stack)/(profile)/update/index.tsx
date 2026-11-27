@@ -1,10 +1,8 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -12,7 +10,6 @@ import {
   Pressable,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import {
@@ -21,6 +18,11 @@ import {
 } from "react-native-safe-area-context";
 import { z } from "zod";
 
+import AvatarPicker from "../../../../src/components/ProfileEdit/AvatarPicker";
+import ProfileEditFeedback from "../../../../src/components/ProfileEdit/ProfileEditFeedback";
+import ProfileIdentityFields, {
+  type ProfileIdentityFieldsValues,
+} from "../../../../src/components/ProfileEdit/ProfileIdentityFields";
 import { resolveAvatarUri } from "../../../../src/components/shared/imageUrls";
 import { APP_COLORS } from "../../../../src/constants/colors";
 import {
@@ -47,8 +49,6 @@ const profileSchema = z.object({
     .min(1, "Informe seu identificador.")
     .max(64, "Use no máximo 64 caracteres."),
 });
-
-type ProfileFormValues = z.infer<typeof profileSchema>;
 
 function validateAvatar(
   asset: ImagePicker.ImagePickerAsset,
@@ -85,45 +85,6 @@ function validateAvatar(
     width: asset.width ?? undefined,
     height: asset.height ?? undefined,
   };
-}
-
-function AvatarPreview({
-  uri,
-  username,
-}: {
-  uri: string | null;
-  username: string;
-}) {
-  const [failedUri, setFailedUri] = useState<string | null>(null);
-  const showImage = uri !== null && failedUri !== uri;
-
-  return (
-    <View className="h-28 w-28 overflow-hidden rounded-full border-2 border-primary bg-[#1c1c1e]">
-      {showImage ? (
-        <Image
-          accessibilityLabel={`Imagem de perfil de ${username}`}
-          cachePolicy="disk"
-          contentFit="cover"
-          source={{ uri }}
-          style={{ height: "100%", width: "100%" }}
-          onError={() => setFailedUri(uri)}
-        />
-      ) : (
-        <View
-          accessibilityLabel="Prévia de avatar indisponível"
-          accessibilityRole="image"
-          className="flex-1 items-center justify-center"
-        >
-          <Ionicons
-            accessible={false}
-            color="#a3a3a3"
-            name="person-circle-outline"
-            size={74}
-          />
-        </View>
-      )}
-    </View>
-  );
 }
 
 export default function UpdateProfileScreen() {
@@ -208,7 +169,7 @@ function UpdateProfileForm({ initialProfile }: { initialProfile: Profile }) {
     reset,
     setError,
     formState: { errors, isDirty },
-  } = useForm<ProfileFormValues>({
+  } = useForm<ProfileIdentityFieldsValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       username: initialProfile.username,
@@ -344,81 +305,24 @@ function UpdateProfileForm({ initialProfile }: { initialProfile: Profile }) {
             <Text className="mt-2 text-base leading-6 text-[#a3a3a3]">
               {formDescription}
             </Text>
-            <View className="mt-8 items-center">
-              <AvatarPreview uri={previewUri} username={baseline.username} />
-              <Pressable
-                accessibilityLabel="Escolher nova imagem de perfil"
-                accessibilityRole="button"
-                accessibilityState={{ disabled: isSaving }}
-                className="mt-4 rounded-full border border-primary px-5 py-3"
-                disabled={isSaving}
-                onPress={() => void chooseAvatar()}
-                style={({ pressed }) => ({
-                  opacity: isSaving ? 0.55 : pressed ? 0.72 : 1,
-                })}
-              >
-                <Text className="font-semibold text-primary">
-                  Trocar imagem
-                </Text>
-              </Pressable>
-              <Text className="mt-3 text-center text-xs leading-5 text-[#a3a3a3]">
-                JPG, JPEG ou PNG em minúsculas, até 2 MiB e com proporção
-                quadrada.
-              </Text>
-              {avatarError && (
-                <Text
-                  accessibilityLiveRegion="polite"
-                  className="mt-2 text-center text-sm text-red-300"
-                >
-                  {avatarError}
-                </Text>
-              )}
-            </View>
-            <View className="mt-8 gap-5">
-              <FormField
-                control={control}
-                editable={!isSaving}
-                error={errors.username?.message}
-                label="Nome de usuário"
-                name="username"
-                autoCapitalize="words"
-                onFocus={() => {
-                  clearErrors("username");
-                  setGeneralError(null);
-                  setNotice(null);
-                }}
-              />
-              <FormField
-                control={control}
-                editable={!isSaving}
-                error={errors.handle?.message}
-                label="Identificador"
-                name="handle"
-                autoCapitalize="none"
-                onFocus={() => {
-                  clearErrors("handle");
-                  setGeneralError(null);
-                  setNotice(null);
-                }}
-                prefix="@"
-              />
-            </View>
-            {(generalError || notice) && (
-              <View
-                accessibilityLiveRegion="polite"
-                className={`mt-5 rounded-xl border px-4 py-3 ${generalError ? "border-red-500/60 bg-red-950/50" : "border-primary/60 bg-[#1c1c1e]"}`}
-              >
-                <Text
-                  className={
-                    generalError
-                      ? "text-sm text-red-200"
-                      : "text-sm text-[#d4d4d4]"
-                  }
-                >
-                  {generalError ?? notice}
-                </Text>
-              </View>
-            )}
+            <AvatarPicker
+              uri={previewUri}
+              username={baseline.username}
+              disabled={isSaving}
+              error={avatarError}
+              onChoose={() => void chooseAvatar()}
+            />
+            <ProfileIdentityFields
+              control={control}
+              errors={errors}
+              disabled={isSaving}
+              onFieldFocus={(field) => {
+                clearErrors(field);
+                setGeneralError(null);
+                setNotice(null);
+              }}
+            />
+            <ProfileEditFeedback error={generalError} notice={notice} />
             <Pressable
               accessibilityLabel="Salvar alterações"
               accessibilityRole="button"
@@ -449,75 +353,5 @@ function UpdateProfileForm({ initialProfile }: { initialProfile: Profile }) {
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
-  );
-}
-
-function FormField({
-  control,
-  editable,
-  error,
-  label,
-  name,
-  autoCapitalize,
-  onFocus,
-  prefix,
-}: {
-  control: ReturnType<typeof useForm<ProfileFormValues>>["control"];
-  editable: boolean;
-  error?: string;
-  label: string;
-  name: keyof ProfileFormValues;
-  autoCapitalize: "none" | "words";
-  onFocus: () => void;
-  prefix?: string;
-}) {
-  return (
-    <View>
-      <Text className="mb-2 text-base font-bold text-white">{label}</Text>
-      <Controller
-        control={control}
-        name={name}
-        render={({ field: { onBlur, onChange, value } }) => (
-          <View
-            className="min-h-[58px] flex-row items-center rounded-[14px] border-2 bg-[#292929] px-5"
-            style={{ borderColor: error ? "#ef4444" : APP_COLORS.primary }}
-          >
-            {prefix && (
-              <View className="mr-1 self-stretch justify-center">
-                <Text className="text-base leading-5 text-[#a3a3a3]">
-                  {prefix}
-                </Text>
-              </View>
-            )}
-            <TextInput
-              accessibilityHint={error}
-              accessibilityLabel={label}
-              accessibilityState={{ disabled: !editable }}
-              autoCapitalize={autoCapitalize}
-              autoCorrect={false}
-              className="flex-1 self-stretch text-base leading-5 text-white"
-              editable={editable}
-              maxLength={64}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              onFocus={onFocus}
-              placeholderTextColor="#8A8A8F"
-              selectionColor={APP_COLORS.primary}
-              style={{ paddingVertical: 0, textAlignVertical: "center" }}
-              underlineColorAndroid="transparent"
-              value={value}
-            />
-          </View>
-        )}
-      />
-      {error && (
-        <Text
-          accessibilityLiveRegion="polite"
-          className="mt-2 text-sm text-red-300"
-        >
-          {error}
-        </Text>
-      )}
-    </View>
   );
 }
