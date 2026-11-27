@@ -1,4 +1,3 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
@@ -10,8 +9,8 @@ import {
   View,
 } from "react-native";
 
-import { APP_COLORS } from "../../constants/colors";
 import { getSession } from "../../session/authSession";
+import RatingStars from "./RatingStars";
 
 interface RatingProps {
   movieId: number;
@@ -22,8 +21,6 @@ interface RatingProps {
   onSubmit: (rating: number) => Promise<unknown>;
   onReset: () => void;
 }
-
-const RATING_OPTIONS = [1, 2, 3, 4, 5] as const;
 
 type RatingSelection = {
   movieId: number;
@@ -112,40 +109,12 @@ export default function Rating({
           </Text>
         ) : null}
 
-        <View
-          accessibilityRole="radiogroup"
-          className="mt-4 flex-row items-center justify-between"
-        >
-          {RATING_OPTIONS.map((rating) => {
-            const isFilled = rating <= selectedRating;
-
-            return (
-              <Pressable
-                key={rating}
-                accessibilityRole="radio"
-                accessibilityLabel={`Avaliar com ${rating} ${rating === 1 ? "estrela" : "estrelas"}`}
-                accessibilityState={{
-                  checked: rating === selectedRating,
-                  disabled: isPending,
-                }}
-                disabled={isPending}
-                hitSlop={4}
-                onPress={() => openModal(rating)}
-                className="h-12 w-12 items-center justify-center rounded-full"
-                style={({ pressed }) => ({
-                  backgroundColor: pressed ? "#262626" : "transparent",
-                  opacity: isPending ? 0.5 : pressed ? 0.75 : 1,
-                })}
-              >
-                <Ionicons
-                  name={isFilled ? "star" : "star-outline"}
-                  size={32}
-                  color={APP_COLORS.ratingStar}
-                />
-              </Pressable>
-            );
-          })}
-        </View>
+        <RatingStars
+          value={selectedRating}
+          disabled={isPending}
+          mode="trigger"
+          onSelect={openModal}
+        />
       </View>
 
       <Modal
@@ -172,47 +141,19 @@ export default function Rating({
             >
               {movieTitle}
             </Text>
-            <View
-              accessibilityRole="radiogroup"
-              className="mt-6 flex-row justify-center"
-            >
-              {RATING_OPTIONS.map((rating) => {
-                const isSelected = rating <= selectedRating;
-
-                return (
-                  <Pressable
-                    key={rating}
-                    accessibilityRole="radio"
-                    accessibilityLabel={`${rating} ${rating === 1 ? "estrela" : "estrelas"}`}
-                    accessibilityState={{
-                      checked: selectedRating === rating,
-                      disabled: isPending,
-                    }}
-                    disabled={isPending}
-                    hitSlop={4}
-                    onPress={() =>
-                      setSelection({
-                        movieId,
-                        value: currentRating,
-                        rating,
-                        isPreview: true,
-                      })
-                    }
-                    className="h-11 w-11 items-center justify-center rounded-full"
-                    style={({ pressed }) => ({
-                      backgroundColor: pressed ? "#262626" : "transparent",
-                      opacity: isPending ? 0.5 : pressed ? 0.75 : 1,
-                    })}
-                  >
-                    <Ionicons
-                      name={isSelected ? "star" : "star-outline"}
-                      size={36}
-                      color={APP_COLORS.ratingStar}
-                    />
-                  </Pressable>
-                );
-              })}
-            </View>
+            <RatingStars
+              value={selectedRating}
+              disabled={isPending}
+              mode="preview"
+              onSelect={(rating) =>
+                setSelection({
+                  movieId,
+                  value: currentRating,
+                  rating,
+                  isPreview: true,
+                })
+              }
+            />
             <Text
               accessibilityLiveRegion="polite"
               className="mt-3 text-center text-sm font-medium text-[#d4d4d4]"

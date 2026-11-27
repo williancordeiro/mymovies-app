@@ -15,37 +15,31 @@ import type { PlaylistMetadata } from "../../utils/playlist/playlist";
 
 type TriggerPosition = { top: number; right: number };
 
-type Props = {
-  playlists: PlaylistMetadata[];
+export type PlaylistPickerState = {
   isLoading: boolean;
   listError?: string;
   selectionError?: string;
-  isPending: boolean;
+  isSelecting: boolean;
   isFetchingMore: boolean;
   hasNextPage: boolean;
-  hasMovieInPlaylist?: boolean;
-  onRequestOpen: () => boolean;
-  onCreate: () => void;
-  onSelect: (playlist: PlaylistMetadata) => Promise<void>;
-  onRetry: () => void;
-  onLoadMore: () => void;
+  hasMovieInPlaylist: boolean;
 };
 
-export default function PlaylistDropdown({
-  playlists,
-  isLoading,
-  listError,
-  selectionError,
-  isPending,
-  isFetchingMore,
-  hasNextPage,
-  hasMovieInPlaylist = false,
-  onRequestOpen,
-  onCreate,
-  onSelect,
-  onRetry,
-  onLoadMore,
-}: Props) {
+export type PlaylistPickerActions = {
+  requestOpen: () => boolean;
+  create: () => void;
+  select: (playlist: PlaylistMetadata) => Promise<void>;
+  retry: () => void;
+  loadMore: () => void;
+};
+
+type Props = {
+  playlists: PlaylistMetadata[];
+  state: PlaylistPickerState;
+  actions: PlaylistPickerActions;
+};
+
+export default function PlaylistDropdown({ playlists, state, actions }: Props) {
   const trigger = useRef<ComponentRef<typeof View>>(null);
   const [visible, setVisible] = useState(false);
   const [position, setPosition] = useState<TriggerPosition>({
@@ -54,7 +48,7 @@ export default function PlaylistDropdown({
   });
 
   const open = () => {
-    if (!onRequestOpen()) return;
+    if (!actions.requestOpen()) return;
     trigger.current?.measureInWindow((x, y, width, height) => {
       setPosition({
         top: y + height + 8,
@@ -66,13 +60,13 @@ export default function PlaylistDropdown({
 
   const create = () => {
     setVisible(false);
-    onCreate();
+    actions.create();
   };
 
   const select = async (playlist: PlaylistMetadata) => {
-    if (isPending) return;
+    if (state.isSelecting) return;
     try {
-      await onSelect(playlist);
+      await actions.select(playlist);
       setVisible(false);
     } catch {}
   };
@@ -83,24 +77,24 @@ export default function PlaylistDropdown({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={
-            hasMovieInPlaylist
+            state.hasMovieInPlaylist
               ? "Gerenciar playlists deste filme"
               : "Adicionar a uma playlist"
           }
           accessibilityHint="Abre as suas playlists"
           accessibilityState={{
             expanded: visible,
-            disabled: isPending,
-            busy: isPending,
+            disabled: state.isSelecting,
+            busy: state.isSelecting,
           }}
-          disabled={isPending}
+          disabled={state.isSelecting}
           onPress={open}
           className="h-11 w-11 items-center justify-center rounded-full bg-[#262626]"
         >
           <Ionicons
-            name={hasMovieInPlaylist ? "checkmark" : "add"}
+            name={state.hasMovieInPlaylist ? "checkmark" : "add"}
             size={29}
-            color={hasMovieInPlaylist ? APP_COLORS.primary : "#ffffff"}
+            color={state.hasMovieInPlaylist ? APP_COLORS.primary : "#ffffff"}
           />
         </Pressable>
       </View>
@@ -126,12 +120,12 @@ export default function PlaylistDropdown({
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Nova lista"
-              accessibilityState={{ disabled: isPending }}
+              accessibilityState={{ disabled: state.isSelecting }}
               onPress={create}
-              disabled={isPending}
+              disabled={state.isSelecting}
               className="min-h-12 flex-row items-center gap-3 px-4"
               style={({ pressed }) => ({
-                opacity: isPending ? 0.5 : pressed ? 0.7 : 1,
+                opacity: state.isSelecting ? 0.5 : pressed ? 0.7 : 1,
               })}
             >
               <Ionicons name="add-circle-outline" size={20} color="#ffffff" />
@@ -139,32 +133,32 @@ export default function PlaylistDropdown({
             </Pressable>
 
             <View className="border-t border-[#3a3a3c]" />
-            {isLoading && !playlists.length ? (
+            {state.isLoading && !playlists.length ? (
               <View className="min-h-14 items-center justify-center">
                 <ActivityIndicator color="#ffffff" />
               </View>
             ) : null}
-            {listError ? (
+            {state.listError ? (
               <View className="gap-2 px-4 py-3">
                 <Text
                   accessibilityLiveRegion="polite"
                   className="text-sm text-[#ff8a80]"
                 >
-                  {listError}
+                  {state.listError}
                 </Text>
-                <Pressable accessibilityRole="button" onPress={onRetry}>
+                <Pressable accessibilityRole="button" onPress={actions.retry}>
                   <Text className="font-semibold text-primary">
                     Tentar novamente
                   </Text>
                 </Pressable>
               </View>
             ) : null}
-            {selectionError ? (
+            {state.selectionError ? (
               <Text
                 accessibilityLiveRegion="polite"
                 className="px-4 py-2 text-sm text-[#ff8a80]"
               >
-                {selectionError}
+                {state.selectionError}
               </Text>
             ) : null}
             <ScrollView nestedScrollEnabled showsVerticalScrollIndicator>
@@ -173,32 +167,35 @@ export default function PlaylistDropdown({
                   key={playlist.id}
                   accessibilityRole="button"
                   accessibilityLabel={`Adicionar à playlist ${playlist.title}`}
-                  accessibilityState={{ disabled: isPending, busy: isPending }}
-                  disabled={isPending}
+                  accessibilityState={{
+                    disabled: state.isSelecting,
+                    busy: state.isSelecting,
+                  }}
+                  disabled={state.isSelecting}
                   onPress={() => void select(playlist)}
                   className="min-h-12 justify-center px-4"
                   style={({ pressed }) => ({
-                    opacity: isPending ? 0.5 : pressed ? 0.7 : 1,
+                    opacity: state.isSelecting ? 0.5 : pressed ? 0.7 : 1,
                   })}
                 >
                   <Text numberOfLines={1} className="font-medium text-white">
-                    {isPending ? "Adicionando..." : playlist.title}
+                    {state.isSelecting ? "Adicionando..." : playlist.title}
                   </Text>
                 </Pressable>
               ))}
-              {hasNextPage ? (
+              {state.hasNextPage ? (
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Carregar mais playlists"
                   accessibilityState={{
-                    disabled: isFetchingMore || isPending,
-                    busy: isFetchingMore,
+                    disabled: state.isFetchingMore || state.isSelecting,
+                    busy: state.isFetchingMore,
                   }}
-                  disabled={isFetchingMore || isPending}
-                  onPress={onLoadMore}
+                  disabled={state.isFetchingMore || state.isSelecting}
+                  onPress={actions.loadMore}
                   className="min-h-12 items-center justify-center border-t border-[#3a3a3c]"
                 >
-                  {isFetchingMore ? (
+                  {state.isFetchingMore ? (
                     <ActivityIndicator color="#ffffff" />
                   ) : (
                     <Text className="font-semibold text-primary">

@@ -10,16 +10,14 @@ import {
 
 type Props = {
   visible: boolean;
-  movieId?: number;
   isPending: boolean;
   error?: string;
-  onCreate: (title: string, movieId?: number) => Promise<void>;
+  onCreate: (title: string) => Promise<void>;
   onClose: () => void;
 };
 
 export default function CreatePlaylistModal({
   visible,
-  movieId,
   isPending,
   error,
   onCreate,
@@ -49,7 +47,7 @@ export default function CreatePlaylistModal({
 
     submitting.current = true;
     try {
-      await onCreate(value, movieId);
+      await onCreate(value);
       setTitle("");
       onClose();
     } catch {
