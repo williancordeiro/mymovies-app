@@ -32,7 +32,6 @@ export function ConfirmPlaylistActionModal({
       await onConfirm();
       onClose();
     } catch {
-      /* Error is rendered from mutation. */
     } finally {
       submitting.current = false;
     }
@@ -69,18 +68,29 @@ export function ConfirmPlaylistActionModal({
           <View className="mt-6 flex-row gap-3">
             <Pressable
               accessibilityRole="button"
+              accessibilityLabel="Cancelar"
+              accessibilityState={{ disabled: pending }}
               disabled={pending}
               onPress={onClose}
               className="min-h-12 flex-1 items-center justify-center rounded-xl border border-[#4a4a4c]"
+              style={({ pressed }) => ({
+                opacity: pending ? 0.5 : pressed ? 0.72 : 1,
+              })}
             >
               <Text className="font-bold text-white">Cancelar</Text>
             </Pressable>
             <Pressable
               accessibilityRole="button"
+              accessibilityLabel={
+                pending ? `${confirmLabel} em andamento` : confirmLabel
+              }
               accessibilityState={{ busy: pending, disabled: pending }}
               disabled={pending}
               onPress={() => void submit()}
               className={`min-h-12 flex-1 items-center justify-center rounded-xl px-3 ${destructive ? "bg-[#b3261e]" : "bg-primary"}`}
+              style={({ pressed }) => ({
+                opacity: pending ? 0.5 : pressed ? 0.72 : 1,
+              })}
             >
               {pending ? (
                 <ActivityIndicator color="#fff" />

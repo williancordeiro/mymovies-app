@@ -53,7 +53,6 @@ export default function CreatePlaylistModal({
       setTitle("");
       onClose();
     } catch {
-      // The mutation error remains visible and allows the user to retry.
     } finally {
       submitting.current = false;
     }

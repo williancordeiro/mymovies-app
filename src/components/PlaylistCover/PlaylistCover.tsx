@@ -3,20 +3,12 @@ import { Image } from "expo-image";
 import { Text, View } from "react-native";
 
 import type { PlaylistCoverMovie } from "../../utils/playlist/playlist";
+import { resolveMovieImageUrl } from "../shared/imageUrls";
 
 type Props = { title: string; movies?: PlaylistCoverMovie[] };
 
-const POSTER_BASE_URL = "https://image.tmdb.org/t/p/w342";
-
-function posterUrl(path: string | null): string | null {
-  if (!path) return null;
-  return /^https?:\/\//.test(path)
-    ? path
-    : `${POSTER_BASE_URL}/${path.replace(/^\/+/, "")}`;
-}
-
 function CoverCell({ movie }: { movie?: PlaylistCoverMovie }) {
-  const uri = movie ? posterUrl(movie.poster_path) : null;
+  const uri = movie ? resolveMovieImageUrl(movie.poster_path, "w342") : null;
   return (
     <View className="flex-1 overflow-hidden bg-[#29292c]">
       {uri ? (
