@@ -32,6 +32,7 @@ import type {
 } from "../utils/auth";
 import { SensitiveAccountError } from "../utils/auth";
 import { toProfile } from "../utils/profile";
+import { profileKeys } from "./keys/profile";
 
 const getServerSnapshot = (): AuthSessionSnapshot => ({
   session: null,
@@ -96,11 +97,6 @@ function toSensitiveMutationError(error: unknown): SensitiveAccountError {
     kind: "general",
   });
 }
-
-const profileKeys = {
-  me: (userId: number, token: string) =>
-    ["profile", "me", userId, token] as const,
-};
 
 export function useChangeEmail() {
   const queryClient = useQueryClient();

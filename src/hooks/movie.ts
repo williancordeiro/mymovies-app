@@ -18,6 +18,7 @@ import {
   type RateMovieError,
 } from "../api/movie";
 import { getAuthSessionSnapshot, getSession } from "../session/authSession";
+import { CatalogError } from "../utils/movies/catalogError";
 import type { FavoriteMutationResponse } from "../utils/movies/favorite";
 import type { MovieDetails } from "../utils/movies/movieDetails";
 import type { RateMovieInput, RateMovieResponse } from "../utils/movies/rating";
@@ -44,6 +45,14 @@ function shouldRetry(error: unknown, failureCount: number): boolean {
       ? (error as { status?: number }).status
       : undefined;
   return (!status || status >= 500) && failureCount < 2;
+}
+
+function shouldRetryCatalog(error: unknown, failureCount: number): boolean {
+  return (
+    error instanceof CatalogError &&
+    error.kind === "transient" &&
+    failureCount < 2
+  );
 }
 
 export const movieKeys = {
@@ -76,6 +85,7 @@ export function useMovieSearch(query: string) {
     queryKey: movieKeys.search(scope, term),
     queryFn: ({ signal }) => searchMovies(term, signal),
     enabled: isRestored && term.length >= 3,
+    retry: shouldRetryCatalog,
   });
 }
 
@@ -85,6 +95,7 @@ export function useMovies() {
     queryKey: movieKeys.list(scope),
     queryFn: getMovies,
     enabled: isRestored,
+    retry: shouldRetryCatalog,
   });
 }
 
@@ -94,6 +105,7 @@ export function useMovie(id: number) {
     queryKey: movieKeys.detail(scope, id),
     queryFn: () => getMovieById(id),
     enabled: isRestored && Number.isInteger(id) && id > 0,
+    retry: shouldRetryCatalog,
   });
 }
 
@@ -148,11 +160,13 @@ export function useSetMovieFavorite() {
         );
       const pending = { favorited: input.favorited, request };
       favoriteMutations.set(key, pending);
-      void request.finally(() => {
-        if (favoriteMutations.get(key) === pending) {
-          favoriteMutations.delete(key);
-        }
-      }).catch(() => undefined);
+      void request
+        .finally(() => {
+          if (favoriteMutations.get(key) === pending) {
+            favoriteMutations.delete(key);
+          }
+        })
+        .catch(() => undefined);
       return request;
     },
     onMutate: () => ({ scope }),

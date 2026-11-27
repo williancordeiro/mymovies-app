@@ -21,12 +21,7 @@ import {
   type UpdateProfileInput,
 } from "../utils/profile";
 import { useAuthSession } from "./auth";
-
-export const profileKeys = {
-  all: ["profile"] as const,
-  me: (userId: number | undefined, token: string | undefined) =>
-    [...profileKeys.all, "me", userId, token] as const,
-};
+import { profileKeys } from "./keys/profile";
 
 export function useProfile() {
   const queryClient = useQueryClient();
