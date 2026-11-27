@@ -4,6 +4,7 @@ import { api } from "../interceptor/api";
 import type {
   CreatePlaylistInput,
   CreatePlaylistResponse,
+  DeletePlaylistResponse,
   PlaylistDetailsPage,
   PlaylistDetailsRequest,
   PlaylistErrorResponse,
@@ -24,30 +25,27 @@ export class PlaylistError extends Error {
 
 function toPlaylistError(
   error: unknown,
-  action: "create" | "list" | "detail" | "update",
+  action: "create" | "list" | "detail" | "update" | "delete",
 ): PlaylistError {
   if (error instanceof PlaylistError) return error;
 
   if (isAxiosError<PlaylistErrorResponse>(error)) {
     const status = error.response?.status;
-    const data = error.response?.data;
     const message =
-      typeof data?.error === "string" && data.error.trim()
-        ? data.error
-        : typeof data?.message === "string" && data.message.trim()
-          ? data.message
-          : status === 401
-            ? "Sua sessão expirou. Entre novamente."
-            : action === "create" || action === "update"
-              ? "Não foi possível salvar a playlist. Tente novamente."
-              : action === "detail"
-                ? "Não foi possível carregar esta playlist. Tente novamente."
-                : "Não foi possível listar as playlists. Tente novamente.";
+      status === 401
+        ? "Sua sessão expirou. Entre novamente."
+        : status === 404
+          ? "Esta playlist não está disponível. Atualize a tela e tente novamente."
+          : action === "create" || action === "update" || action === "delete"
+            ? "Não foi possível salvar a playlist. Tente novamente."
+            : action === "detail"
+              ? "Não foi possível carregar esta playlist. Tente novamente."
+              : "Não foi possível listar as playlists. Tente novamente.";
     return new PlaylistError(message, status);
   }
 
   return new PlaylistError(
-    action === "create" || action === "update"
+    action === "create" || action === "update" || action === "delete"
       ? "Não foi possível conectar ao servidor para salvar a playlist."
       : action === "detail"
         ? "Não foi possível conectar ao servidor para carregar esta playlist."
@@ -170,5 +168,16 @@ export async function updatePlaylist(
     return data;
   } catch (error) {
     throw toPlaylistError(error, "update");
+  }
+}
+
+export async function deletePlaylist(id: number): Promise<DeletePlaylistResponse> {
+  assertPlaylistId(id);
+
+  try {
+    const { data } = await api.delete<DeletePlaylistResponse>(`/playlists/${id}`);
+    return data;
+  } catch (error) {
+    throw toPlaylistError(error, "delete");
   }
 }
