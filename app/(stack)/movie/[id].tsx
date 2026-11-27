@@ -2,6 +2,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
+import { useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -11,6 +12,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import CreatePlaylistModal from "../../../src/components/CreatePlaylistModal/CreatePlaylistModal";
+import PlaylistDropdown from "../../../src/components/PlaylistDropdown/PlaylistDropdown";
 import Rating from "../../../src/components/Rating/Rating";
 import { APP_COLORS } from "../../../src/constants/colors";
 import { useAuthSession } from "../../../src/hooks/auth";
@@ -19,6 +22,11 @@ import {
   useRateMovie,
   useSetMovieFavorite,
 } from "../../../src/hooks/movie";
+import {
+  useAddMovieToPlaylist,
+  useCreatePlaylist,
+  usePlaylists,
+} from "../../../src/hooks/playlist";
 import type { MovieDetails } from "../../../src/utils/movies/movieDetails";
 
 const IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
@@ -65,7 +73,20 @@ function MovieContent({
 }) {
   const rateMovie = useRateMovie();
   const setFavorite = useSetMovieFavorite();
+  const playlistsQuery = usePlaylists();
+  const addMovie = useAddMovieToPlaylist();
+  const createPlaylist = useCreatePlaylist();
   const { session } = useAuthSession();
+  const [createVisible, setCreateVisible] = useState(false);
+  const selectionSubmitting = useRef(false);
+  const playlists = useMemo(() => {
+    const ids = new Set<number>();
+    return (
+      playlistsQuery.data?.pages.flatMap((page) => page.playlists) ?? []
+    ).filter(
+      (playlist) => !ids.has(playlist.id) && (ids.add(playlist.id), true),
+    );
+  }, [playlistsQuery.data]);
   const backdropUrl = getImageUrl(movie.backdrop_path, "w1280");
   const posterUrl = getImageUrl(movie.poster_path, "w500");
   const myMoviesRating = Number.isFinite(movie.mymovies_rating_average)
@@ -97,6 +118,25 @@ function MovieContent({
     }
     setFavorite.reset();
     setFavorite.mutate({ movieId, favorited: !isFavorite });
+  };
+
+  const openPlaylistSelector = () => {
+    if (!session) {
+      router.push("/auth/login");
+      return false;
+    }
+    return true;
+  };
+
+  const selectPlaylist = async (playlist: (typeof playlists)[number]) => {
+    if (selectionSubmitting.current || addMovie.isPending) return;
+    selectionSubmitting.current = true;
+    addMovie.reset();
+    try {
+      await addMovie.mutateAsync({ playlistId: playlist.id, movieId });
+    } finally {
+      selectionSubmitting.current = false;
+    }
   };
 
   return (
@@ -161,34 +201,50 @@ function MovieContent({
           <Text className="flex-1 text-2xl font-bold leading-9 text-white">
             {movie.title}
           </Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={
-              setFavorite.isPending ? "Atualizando favoritos" : favoriteLabel
-            }
-            accessibilityState={{
-              selected: isFavorite,
-              disabled: setFavorite.isPending,
-              busy: setFavorite.isPending,
-            }}
-            disabled={setFavorite.isPending}
-            onPress={toggleFavorite}
-            hitSlop={8}
-            className="h-11 w-11 items-center justify-center rounded-full bg-[#262626]"
-            style={({ pressed }) => ({
-              opacity: setFavorite.isPending ? 0.5 : pressed ? 0.72 : 1,
-            })}
-          >
-            {setFavorite.isPending ? (
-              <ActivityIndicator size="small" color={APP_COLORS.primary} />
-            ) : (
-              <Ionicons
-                name={isFavorite ? "heart" : "heart-outline"}
-                size={29}
-                color={isFavorite ? "rgb(250, 82, 82)" : "#ffffff"}
-              />
-            )}
-          </Pressable>
+          <View className="flex-row gap-2">
+            <PlaylistDropdown
+              playlists={playlists}
+              isLoading={playlistsQuery.isPending}
+              listError={playlistsQuery.error?.message}
+              selectionError={addMovie.error?.message}
+              isPending={addMovie.isPending}
+              isFetchingMore={playlistsQuery.isFetchingNextPage}
+              hasNextPage={Boolean(playlistsQuery.hasNextPage)}
+              onRequestOpen={openPlaylistSelector}
+              onCreate={() => setCreateVisible(true)}
+              onSelect={selectPlaylist}
+              onRetry={() => void playlistsQuery.refreshFromStart()}
+              onLoadMore={() => void playlistsQuery.fetchNextPage()}
+            />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={
+                setFavorite.isPending ? "Atualizando favoritos" : favoriteLabel
+              }
+              accessibilityState={{
+                selected: isFavorite,
+                disabled: setFavorite.isPending,
+                busy: setFavorite.isPending,
+              }}
+              disabled={setFavorite.isPending}
+              onPress={toggleFavorite}
+              hitSlop={8}
+              className="h-11 w-11 items-center justify-center rounded-full bg-[#262626]"
+              style={({ pressed }) => ({
+                opacity: setFavorite.isPending ? 0.5 : pressed ? 0.72 : 1,
+              })}
+            >
+              {setFavorite.isPending ? (
+                <ActivityIndicator size="small" color={APP_COLORS.primary} />
+              ) : (
+                <Ionicons
+                  name={isFavorite ? "heart" : "heart-outline"}
+                  size={29}
+                  color={isFavorite ? "rgb(250, 82, 82)" : "#ffffff"}
+                />
+              )}
+            </Pressable>
+          </View>
         </View>
         {movie.original_title !== movie.title ? (
           <Text className="mt-1 text-sm text-[#8e8e93]">
@@ -233,6 +289,21 @@ function MovieContent({
           error={rateMovie.error}
           onSubmit={(rating) => rateMovie.mutateAsync({ movieId, rating })}
           onReset={rateMovie.reset}
+        />
+
+        <CreatePlaylistModal
+          visible={createVisible}
+          movieId={movieId}
+          isPending={createPlaylist.isPending}
+          error={createPlaylist.error?.message}
+          onClose={() => setCreateVisible(false)}
+          onCreate={async (title, contextualMovieId) => {
+            await createPlaylist.mutateAsync(
+              contextualMovieId === undefined
+                ? { title }
+                : { title, movieIds: [contextualMovieId] },
+            );
+          }}
         />
 
         {movie.tagline ? (
