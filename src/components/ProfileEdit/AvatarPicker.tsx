@@ -1,7 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Image } from "expo-image";
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
 function AvatarPreview({
   uri,
@@ -46,6 +46,7 @@ type AvatarPickerProps = {
   uri: string | null;
   username: string;
   disabled: boolean;
+  isPreparing: boolean;
   error: string | null;
   onChoose: () => void;
 };
@@ -54,6 +55,7 @@ export default function AvatarPicker({
   uri,
   username,
   disabled,
+  isPreparing,
   error,
   onChoose,
 }: AvatarPickerProps) {
@@ -63,7 +65,7 @@ export default function AvatarPicker({
       <Pressable
         accessibilityLabel="Escolher nova imagem de perfil"
         accessibilityRole="button"
-        accessibilityState={{ disabled }}
+        accessibilityState={{ disabled, busy: isPreparing }}
         className="mt-4 rounded-full border border-primary px-5 py-3"
         disabled={disabled}
         onPress={onChoose}
@@ -71,10 +73,17 @@ export default function AvatarPicker({
           opacity: disabled ? 0.55 : pressed ? 0.72 : 1,
         })}
       >
-        <Text className="font-semibold text-primary">Trocar imagem</Text>
+        {isPreparing ? (
+          <View className="flex-row items-center gap-2">
+            <ActivityIndicator color="#facc15" size="small" />
+            <Text className="font-semibold text-primary">Preparando...</Text>
+          </View>
+        ) : (
+          <Text className="font-semibold text-primary">Escolher imagem</Text>
+        )}
       </Pressable>
       <Text className="mt-3 text-center text-xs leading-5 text-[#a3a3a3]">
-        JPG, JPEG ou PNG em minúsculas, até 2 MiB e com proporção quadrada.
+        JPG, JPEG ou PNG.
       </Text>
       {error ? (
         <Text

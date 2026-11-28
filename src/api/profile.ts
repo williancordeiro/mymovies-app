@@ -2,6 +2,10 @@ import { isAxiosError } from "axios";
 import { Platform } from "react-native";
 
 import { api } from "../interceptor/api";
+import {
+  AVATAR_REQUIREMENTS_MESSAGE,
+  getAvatarInputError,
+} from "../utils/avatar";
 import type { AuthenticatedUser } from "../utils/auth";
 import {
   isUpdateProfileError,
@@ -98,17 +102,28 @@ function toUpdateProfileError(
       });
     }
 
+    if (operation === "avatar" && status === 413) {
+      return new UpdateProfileError({
+        message: "A imagem excede o limite permitido de 5 MiB.",
+        kind: "invalidFile",
+        status,
+      });
+    }
+
     if (status === 422) {
       const { fieldErrors, hasUnknownFields } = getFieldErrors(
         data?.errors,
         operation === "profile" ? ["username", "handle"] : ["avatar_file"],
       );
-      const fallback = "Revise os dados informados e tente novamente.";
+      const fallback =
+        operation === "avatar"
+          ? "Não foi possível enviar a imagem. Tente novamente."
+          : "Revise os dados informados e tente novamente.";
 
       return new UpdateProfileError({
         message: hasUnknownFields
           ? fallback
-          : getMessage(data?.message, fallback),
+          : getMessage(data?.message, getMessage(data?.error, fallback)),
         kind: "validation",
         status,
         fieldErrors,
@@ -116,8 +131,12 @@ function toUpdateProfileError(
     }
 
     if (operation === "avatar" && status === 400) {
+      const serverMessage = getMessage(data?.error, "");
       return new UpdateProfileError({
-        message: getMessage(data?.error, "O arquivo selecionado é inválido."),
+        message:
+          serverMessage && serverMessage !== "Arquivo inválido"
+            ? serverMessage
+            : AVATAR_REQUIREMENTS_MESSAGE,
         kind: "invalidFile",
         status,
       });
@@ -125,7 +144,9 @@ function toUpdateProfileError(
 
     const fallback =
       operation === "avatar"
-        ? "Não foi possível atualizar a imagem. Tente novamente."
+        ? status === 500
+          ? "Não foi possível salvar a imagem. Tente novamente."
+          : "Não foi possível atualizar a imagem. Tente novamente."
         : "Não foi possível atualizar o perfil. Tente novamente.";
 
     return new UpdateProfileError({
@@ -198,29 +219,15 @@ function normalizeProfileInput(input: UpdateProfileInput): UpdateProfileInput {
 }
 
 function validateAvatar(input: AvatarUploadInput): void {
-  const extension = input.name.split(".").pop();
-  const validExtension =
-    (input.mimeType === "image/jpeg" &&
-      (extension === "jpg" || extension === "jpeg")) ||
-    (input.mimeType === "image/png" && extension === "png");
-  const isSquare =
-    input.width === undefined ||
-    input.height === undefined ||
-    (input.height > 0 &&
-      input.width / input.height >= 0.95 &&
-      input.width / input.height <= 1.05);
+  const error = getAvatarInputError(input);
 
-  if (
-    !input.uri ||
-    !input.name ||
-    !validExtension ||
-    (input.size !== undefined && input.size > 2 * 1024 * 1024) ||
-    !isSquare
-  ) {
+  if (error) {
     throw new UpdateProfileError({
-      message: "Selecione uma imagem JPG ou PNG quadrada, com no máximo 2 MB.",
+      message: error,
       kind: "invalidFile",
-      fieldErrors: { avatar_file: "Arquivo inválido." },
+      fieldErrors: {
+        avatar_file: error,
+      },
     });
   }
 }

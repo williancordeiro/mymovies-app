@@ -31,6 +31,7 @@ import {
   useUpdateProfile,
 } from "../../../../src/hooks/profile";
 import { getSession } from "../../../../src/session/authSession";
+import { getAvatarInputError } from "../../../../src/utils/avatar";
 import {
   isUpdateProfileError,
   type AvatarUploadInput,
@@ -53,31 +54,14 @@ const profileSchema = z.object({
 function validateAvatar(
   asset: ImagePicker.ImagePickerAsset,
 ): AvatarUploadInput | string {
-  const name = asset.fileName ?? asset.uri.split("/").pop() ?? "avatar";
-  const extension = name.split(".").pop();
   const mimeType = asset.mimeType;
 
-  if (
-    (extension !== "jpg" && extension !== "jpeg" && extension !== "png") ||
-    (mimeType !== "image/jpeg" && mimeType !== "image/png")
-  ) {
-    return "Escolha uma imagem JPG, JPEG ou PNG com a extensão em minúsculas.";
-  }
-  if (
-    asset.fileSize !== null &&
-    asset.fileSize !== undefined &&
-    asset.fileSize > 2 * 1024 * 1024
-  ) {
-    return "Escolha uma imagem de até 2 MiB.";
-  }
-  if (asset.width && asset.height) {
-    const ratio = asset.width / asset.height;
-    if (ratio < 0.95 || ratio > 1.05) {
-      return "Escolha uma imagem quadrada.";
-    }
+  if (mimeType !== "image/jpeg" && mimeType !== "image/png") {
+    return "Não foi possível identificar o formato da imagem. Escolha um arquivo JPG, JPEG ou PNG.";
   }
 
-  return {
+  const name = asset.fileName ?? asset.uri.split("/").pop() ?? "";
+  const input: AvatarUploadInput = {
     uri: asset.uri,
     name,
     mimeType,
@@ -85,6 +69,8 @@ function validateAvatar(
     width: asset.width ?? undefined,
     height: asset.height ?? undefined,
   };
+
+  return getAvatarInputError(input) ?? input;
 }
 
 export default function UpdateProfileScreen() {
@@ -160,6 +146,7 @@ function UpdateProfileForm({ initialProfile }: { initialProfile: Profile }) {
   const [baseline, setBaseline] = useState(initialProfile);
   const [avatar, setAvatar] = useState<AvatarUploadInput | null>(null);
   const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [isPreparingAvatar, setIsPreparingAvatar] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const {
@@ -177,25 +164,39 @@ function UpdateProfileForm({ initialProfile }: { initialProfile: Profile }) {
     },
   });
   const isSaving = updateProfile.isPending || updateAvatar.isPending;
+  const isAvatarBusy = isSaving || isPreparingAvatar;
   const previewUri = avatar?.uri ?? resolveAvatarUri(baseline.avatarFile);
   const hasPendingChange = isDirty || avatar !== null;
 
   const chooseAvatar = async () => {
-    if (isSaving) return;
-    setAvatarError(null);
-    setGeneralError(null);
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsEditing: false,
-      quality: 1,
-    });
-    if (result.canceled || !result.assets[0]) return;
-    const selected = validateAvatar(result.assets[0]);
-    if (typeof selected === "string") {
-      setAvatarError(selected);
-      return;
+    if (isAvatarBusy) return;
+
+    setIsPreparingAvatar(true);
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+      if (result.canceled || !result.assets[0]) return;
+
+      const selected = validateAvatar(result.assets[0]);
+      if (typeof selected === "string") {
+        setAvatarError(selected);
+        return;
+      }
+
+      setAvatarError(null);
+      setGeneralError(null);
+      setAvatar(selected);
+    } catch {
+      setAvatarError(
+        "Não foi possível preparar a imagem. Escolha outra foto e tente novamente.",
+      );
+    } finally {
+      setIsPreparingAvatar(false);
     }
-    setAvatar(selected);
   };
 
   const applyServerError = (error: unknown, avatarOperation = false) => {
@@ -215,18 +216,17 @@ function UpdateProfileForm({ initialProfile }: { initialProfile: Profile }) {
         setAvatarError(message);
       }
     }
-    if (
-      avatarOperation &&
-      (error.kind === "invalidFile" || !Object.keys(error.fieldErrors).length)
-    ) {
-      setAvatarError(error.message);
+    if (avatarOperation && error.kind !== "unauthorized") {
+      if (!Object.keys(error.fieldErrors).length) {
+        setAvatarError(error.message);
+      }
       return;
     }
     setGeneralError(error.message);
   };
 
   const submit = handleSubmit(async (values) => {
-    if (isSaving) return;
+    if (isAvatarBusy) return;
     setGeneralError(null);
     setNotice(null);
     setAvatarError(null);
@@ -308,7 +308,8 @@ function UpdateProfileForm({ initialProfile }: { initialProfile: Profile }) {
             <AvatarPicker
               uri={previewUri}
               username={baseline.username}
-              disabled={isSaving}
+              disabled={isAvatarBusy}
+              isPreparing={isPreparingAvatar}
               error={avatarError}
               onChoose={() => void chooseAvatar()}
             />
@@ -327,15 +328,15 @@ function UpdateProfileForm({ initialProfile }: { initialProfile: Profile }) {
               accessibilityLabel="Salvar alterações"
               accessibilityRole="button"
               accessibilityState={{
-                disabled: isSaving || !hasPendingChange,
-                busy: isSaving,
+                disabled: isAvatarBusy || !hasPendingChange,
+                busy: isAvatarBusy,
               }}
               className="mt-9 min-h-[60px] items-center justify-center rounded-[14px] bg-primary px-6"
-              disabled={isSaving || !hasPendingChange}
+              disabled={isAvatarBusy || !hasPendingChange}
               onPress={() => void submit()}
               style={({ pressed }) => ({
                 opacity:
-                  isSaving || !hasPendingChange ? 0.5 : pressed ? 0.75 : 1,
+                  isAvatarBusy || !hasPendingChange ? 0.5 : pressed ? 0.75 : 1,
               })}
             >
               {isSaving ? (
