@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   AccessibilityInfo,
   ActivityIndicator,
@@ -20,6 +20,10 @@ interface RatingProps {
   error: Error | null;
   onSubmit: (rating: number) => Promise<unknown>;
   onReset: () => void;
+  isRemoving: boolean;
+  removeError: Error | null;
+  onRemove: () => Promise<unknown>;
+  onRemoveReset: () => void;
 }
 
 type RatingSelection = {
@@ -37,9 +41,16 @@ export default function Rating({
   error,
   onSubmit,
   onReset,
+  isRemoving,
+  removeError,
+  onRemove,
+  onRemoveReset,
 }: RatingProps) {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isRemoveModalVisible, setIsRemoveModalVisible] = useState(false);
+  const removalSubmitting = useRef(false);
   const currentRating = value ? Math.min(Math.max(Math.round(value), 1), 5) : 0;
+  const isBusy = isPending || isRemoving;
   const [selection, setSelection] = useState<RatingSelection>(() => ({
     movieId,
     value: currentRating,
@@ -52,7 +63,7 @@ export default function Rating({
   const hasPreview = isCurrentSelection && selection.isPreview;
 
   const closeModal = () => {
-    if (!isPending) {
+    if (!isBusy) {
       setSelection({
         movieId,
         value: currentRating,
@@ -65,7 +76,7 @@ export default function Rating({
 
   const openModal = (rating: number) => {
     if (
-      isPending ||
+      isBusy ||
       !Number.isInteger(movieId) ||
       movieId <= 0 ||
       !Number.isInteger(rating) ||
@@ -86,7 +97,7 @@ export default function Rating({
   };
 
   const submit = async () => {
-    if (isPending || selectedRating < 1 || selectedRating > 5) return;
+    if (isBusy || selectedRating < 1 || selectedRating > 5) return;
 
     try {
       await onSubmit(selectedRating);
@@ -95,6 +106,38 @@ export default function Rating({
       );
       setIsModalVisible(false);
     } catch {}
+  };
+
+  const openRemoveModal = () => {
+    if (isBusy || currentRating === 0) return;
+    if (!getSession()) {
+      router.push("/auth/login");
+      return;
+    }
+
+    onRemoveReset();
+    setIsRemoveModalVisible(true);
+  };
+
+  const closeRemoveModal = () => {
+    if (!isBusy) setIsRemoveModalVisible(false);
+  };
+
+  const remove = async () => {
+    if (removalSubmitting.current || isBusy || currentRating === 0) return;
+
+    removalSubmitting.current = true;
+    try {
+      await onRemove();
+      setIsRemoveModalVisible(false);
+      AccessibilityInfo.announceForAccessibility(
+        "Avaliação removida com sucesso.",
+      );
+    } catch {
+      // The mutation error stays visible in the confirmation modal.
+    } finally {
+      removalSubmitting.current = false;
+    }
   };
 
   return (
@@ -111,10 +154,27 @@ export default function Rating({
 
         <RatingStars
           value={selectedRating}
-          disabled={isPending}
+          disabled={isBusy}
           mode="trigger"
           onSelect={openModal}
         />
+        {currentRating ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Remover sua avaliação"
+            accessibilityState={{ disabled: isBusy }}
+            disabled={isBusy}
+            onPress={openRemoveModal}
+            className="mt-4 min-h-11 self-start justify-center rounded-xl border border-[#7f3b3b] px-4"
+            style={({ pressed }) => ({
+              opacity: isBusy ? 0.5 : pressed ? 0.72 : 1,
+            })}
+          >
+            <Text className="font-semibold text-[#ff8a80]">
+              Remover avaliação
+            </Text>
+          </Pressable>
+        ) : null}
       </View>
 
       <Modal
@@ -143,7 +203,7 @@ export default function Rating({
             </Text>
             <RatingStars
               value={selectedRating}
-              disabled={isPending}
+              disabled={isBusy}
               mode="preview"
               onSelect={(rating) =>
                 setSelection({
@@ -173,12 +233,12 @@ export default function Rating({
             <View className="mt-6 flex-row gap-3">
               <Pressable
                 accessibilityRole="button"
-                accessibilityState={{ disabled: isPending }}
-                disabled={isPending}
+                accessibilityState={{ disabled: isBusy }}
+                disabled={isBusy}
                 onPress={closeModal}
                 className="min-h-12 flex-1 items-center justify-center rounded-xl border border-[#4a4a4c] bg-[#232322] px-4"
                 style={({ pressed }) => ({
-                  opacity: isPending ? 0.5 : pressed ? 0.72 : 1,
+                  opacity: isBusy ? 0.5 : pressed ? 0.72 : 1,
                 })}
               >
                 <Text className="font-bold text-white">Cancelar</Text>
@@ -186,18 +246,18 @@ export default function Rating({
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={
-                  isPending ? "Salvando avaliação" : "Confirmar avaliação"
+                  isBusy ? "Salvando avaliação" : "Confirmar avaliação"
                 }
                 accessibilityState={{
-                  disabled: isPending || selectedRating === 0,
-                  busy: isPending,
+                  disabled: isBusy || selectedRating === 0,
+                  busy: isBusy,
                 }}
-                disabled={isPending || selectedRating === 0}
+                disabled={isBusy || selectedRating === 0}
                 onPress={() => void submit()}
                 className="min-h-12 flex-1 items-center justify-center rounded-xl bg-primary px-4"
                 style={({ pressed }) => ({
                   opacity:
-                    isPending || selectedRating === 0
+                    isBusy || selectedRating === 0
                       ? 0.5
                       : pressed
                         ? 0.72
@@ -208,6 +268,72 @@ export default function Rating({
                   <ActivityIndicator color="#ffffff" />
                 ) : (
                   <Text className="font-bold text-white">Confirmar</Text>
+                )}
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        animationType="fade"
+        transparent
+        visible={isRemoveModalVisible}
+        statusBarTranslucent
+        onRequestClose={closeRemoveModal}
+      >
+        <View className="flex-1 items-center justify-center bg-black/75 px-4">
+          <View
+            accessibilityViewIsModal
+            className="w-full max-w-sm rounded-[20px] border border-[#3b3b39] bg-[#171716] px-4 pb-5 pt-6"
+          >
+            <Text
+              accessibilityRole="header"
+              className="text-center text-xl font-bold text-white"
+            >
+              Remover avaliação?
+            </Text>
+            <Text className="mt-3 text-center text-sm leading-5 text-[#a3a3a3]">
+              Sua nota de {currentRating} de 5 para {movieTitle} será removida.
+            </Text>
+            {removeError ? (
+              <Text
+                accessibilityLiveRegion="assertive"
+                className="mt-4 text-center text-sm leading-5 text-[#ff8a80]"
+              >
+                {removeError.message}
+              </Text>
+            ) : null}
+            <View className="mt-6 flex-row gap-3">
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ disabled: isBusy }}
+                disabled={isBusy}
+                onPress={closeRemoveModal}
+                className="min-h-12 flex-1 items-center justify-center rounded-xl border border-[#4a4a4c] bg-[#232322] px-4"
+                style={({ pressed }) => ({
+                  opacity: isBusy ? 0.5 : pressed ? 0.72 : 1,
+                })}
+              >
+                <Text className="font-bold text-white">Cancelar</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={
+                  isRemoving ? "Removendo avaliação" : "Confirmar remoção"
+                }
+                accessibilityState={{ disabled: isBusy, busy: isRemoving }}
+                disabled={isBusy}
+                onPress={() => void remove()}
+                className="min-h-12 flex-1 items-center justify-center rounded-xl bg-[#b93f3f] px-4"
+                style={({ pressed }) => ({
+                  opacity: isBusy ? 0.5 : pressed ? 0.72 : 1,
+                })}
+              >
+                {isRemoving ? (
+                  <ActivityIndicator color="#ffffff" />
+                ) : (
+                  <Text className="font-bold text-white">Remover</Text>
                 )}
               </Pressable>
             </View>

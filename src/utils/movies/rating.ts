@@ -17,3 +17,10 @@ export interface RateMovieErrorResponse {
   error?: unknown;
   message?: unknown;
 }
+
+export type RemoveMovieRatingResponse =
+  | {
+      success: true;
+      message: string;
+    }
+  | undefined;

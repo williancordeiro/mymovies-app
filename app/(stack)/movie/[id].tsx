@@ -20,6 +20,7 @@ import { APP_COLORS } from "../../../src/constants/colors";
 import { useAuthSession } from "../../../src/hooks/auth";
 import {
   useMovie,
+  useRemoveMovieRating,
   useRateMovie,
   useSetMovieFavorite,
 } from "../../../src/hooks/movie";
@@ -39,6 +40,7 @@ function MovieContent({
   movieId: number;
 }) {
   const rateMovie = useRateMovie();
+  const removeMovieRating = useRemoveMovieRating();
   const setFavorite = useSetMovieFavorite();
   const playlistsQuery = usePlaylists();
   const addMovie = useAddMovieToPlaylist();
@@ -139,6 +141,10 @@ function MovieContent({
               error={rateMovie.error}
               onSubmit={(rating) => rateMovie.mutateAsync({ movieId, rating })}
               onReset={rateMovie.reset}
+              isRemoving={removeMovieRating.isPending}
+              removeError={removeMovieRating.error}
+              onRemove={() => removeMovieRating.mutateAsync(movieId)}
+              onRemoveReset={removeMovieRating.reset}
             />
           }
         />

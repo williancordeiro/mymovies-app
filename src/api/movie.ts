@@ -26,6 +26,7 @@ import type {
   RateMovieErrorResponse,
   RateMovieInput,
   RateMovieResponse,
+  RemoveMovieRatingResponse,
 } from "../utils/movies/rating";
 
 export class FavoriteError extends Error {
@@ -157,6 +158,29 @@ function getRateMovieError(error: unknown): RateMovieError {
   );
 }
 
+function getRemoveMovieRatingError(error: unknown): RateMovieError {
+  if (isAxiosError<RateMovieErrorResponse>(error)) {
+    const status = error.response?.status;
+    const data = error.response?.data;
+    const message =
+      typeof data?.error === "string" && data.error.trim()
+        ? data.error
+        : typeof data?.message === "string" && data.message.trim()
+          ? data.message
+          : status === 404
+            ? "Avaliação não encontrada."
+            : status
+              ? "Não foi possível remover sua avaliação. Tente novamente."
+              : "Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.";
+
+    return new RateMovieError(message, status);
+  }
+
+  return new RateMovieError(
+    "Ocorreu um erro inesperado ao remover sua avaliação. Tente novamente.",
+  );
+}
+
 export async function searchMovies(
   query: string,
   signal?: AbortSignal,
@@ -227,5 +251,23 @@ export async function rateMovie({
     return data;
   } catch (error) {
     throw getRateMovieError(error);
+  }
+}
+
+export async function removeMovieRating(
+  movieId: number,
+): Promise<RemoveMovieRatingResponse> {
+  if (!Number.isInteger(movieId) || movieId <= 0) {
+    throw new RateMovieError("O ID do filme é inválido.");
+  }
+
+  try {
+    const response = await api.delete<Exclude<RemoveMovieRatingResponse, undefined>>(
+      `/movies/rate/${movieId}`,
+    );
+
+    return response.status === 204 ? undefined : response.data;
+  } catch (error) {
+    throw getRemoveMovieRatingError(error);
   }
 }

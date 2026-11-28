@@ -13,6 +13,7 @@ import {
   getMovies,
   rateMovie,
   removeFavorite,
+  removeMovieRating,
   searchMovies,
   type FavoriteError,
   type RateMovieError,
@@ -21,7 +22,11 @@ import { getAuthSessionSnapshot, getSession } from "../session/authSession";
 import { CatalogError } from "../utils/movies/catalogError";
 import type { FavoriteMutationResponse } from "../utils/movies/favorite";
 import type { MovieDetails } from "../utils/movies/movieDetails";
-import type { RateMovieInput, RateMovieResponse } from "../utils/movies/rating";
+import type {
+  RateMovieInput,
+  RateMovieResponse,
+  RemoveMovieRatingResponse,
+} from "../utils/movies/rating";
 import { useAuthSession } from "./auth";
 
 type SessionScope = "anonymous" | `user:${number}:${number}`;
@@ -257,5 +262,52 @@ export function useRateMovie() {
           queryKey: ["users", "ratings", handle],
         });
     },
+  });
+}
+
+export function useRemoveMovieRating() {
+  const queryClient = useQueryClient();
+  const { scope } = useCurrentScope();
+
+  return useMutation<
+    RemoveMovieRatingResponse,
+    RateMovieError,
+    number,
+    FavoriteMutationContext
+  >({
+    mutationFn: removeMovieRating,
+    onMutate: () => ({ scope }),
+    onSuccess: (_response, movieId, context) => {
+      if (!context) return;
+      const snapshot = getAuthSessionSnapshot();
+      const currentScope = getMovieSessionScope(
+        snapshot.session?.user.id,
+        snapshot.generation,
+      );
+      if (context.scope !== currentScope) return;
+
+      queryClient.setQueryData<MovieDetails>(
+        movieKeys.detail(context.scope, movieId),
+        (movie) => (movie ? { ...movie, user_rating: null } : movie),
+      );
+      void queryClient.invalidateQueries({
+        queryKey: movieKeys.detail(context.scope, movieId),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: movieKeys.list(context.scope),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: [...movieKeys.all(context.scope), "search"],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["playlists", context.scope],
+      });
+      const handle = getSession()?.user.handle.trim();
+      if (handle)
+        void queryClient.invalidateQueries({
+          queryKey: ["users", "ratings", handle],
+        });
+    },
+    retry: false,
   });
 }
